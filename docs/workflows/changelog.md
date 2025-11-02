@@ -215,7 +215,7 @@ git log --grep="^fix:" --pretty=format:"- %s"
 
 - [Semantic Versioning](./semantic-versioning.md)
 - [Release Management](./release-management.md)
-- [AGENTS.md](../AGENTS.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ## References
 

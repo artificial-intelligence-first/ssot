@@ -91,7 +91,7 @@ repository/
 └── src/                 # Implementation follows SSOT
 ```
 
-**Note**: This reference repository stores `SSOT.md` in `file/` for organizational purposes. When implementing SSOT in your own projects, place it at the root for easier access and discoverability.
+**Note**: This reference repository stores `SSOT.md` in the repository root. When implementing SSOT in your own projects, place it at the root for easier access and discoverability.
 
 ### Structure *(Sample outline)*
 
@@ -194,7 +194,7 @@ This document contains canonical definitions, policies, and data contracts for t
 
 ## SSOT Workflow
 
-SSOT updates must stay in sync with companion documents. When terms or policies change, update the operational procedures in `AGENTS.md`, the relevant ExecPlans in `PLANS.md`, and any user-facing announcements in `CHANGELOG.md`.
+SSOT updates must stay in sync with companion documents. When terms or policies change, update the operational procedures in `AGENTS.md`, the relevant ExecPlans documented in [docs/workflows/plans.md](../workflows/plans.md), and any user-facing announcements in `CHANGELOG.md`.
 
 ### Creating New Definitions
 
@@ -263,7 +263,7 @@ Current API version: v2
 - API endpoints migrated from v1 to v2 (see SSOT.md for current endpoints)
 ```
 
-### SSOT + PLANS.md (ExecPlans)
+### SSOT + ExecPlans
 
 **Relationship**: ExecPlans use SSOT terminology consistently
 
@@ -451,7 +451,7 @@ Authorization: Bearer <token>
 
 ## Authentication
 
-This API uses Bearer token authentication as defined in [SSOT.md](../SSOT.md#authentication-policy).
+This API uses Bearer token authentication as defined in [SSOT.md](../../SSOT.md#authentication-policy).
 
 See SSOT.md for current endpoint URLs and token format.
 ```

@@ -4,58 +4,84 @@ slug: agent-kit
 status: living
 last_updated: 2025-11-01
 tags: [agents, sdk, openai, framework, tools]
-summary: "Framework for building autonomous agents with GPT models, providing tool integration and orchestration."
+summary: "Conceptual overview of Agent Kit patterns for building OpenAI-powered agents using the Responses API and Agents SDK."
 authors: []
 sources:
-  - { id: R1, title: "OpenAI Agent Kit GitHub", url: "https://github.com/openai/agent-kit", accessed: "2025-10-24" }
-  - { id: R2, title: "OpenAI Platform Documentation", url: "https://platform.openai.com/docs", accessed: "2025-10-24" }
+  - { id: R1, title: "OpenAI Platform Documentation", url: "https://platform.openai.com/docs", accessed: "2025-10-24" }
 ---
 
 # Agent Kit
 
-> **For Humans**: Agent Kit is OpenAI's framework for building autonomous agents with tool calling, memory, and complex reasoning capabilities.
+> **For Humans**: Agent Kit refers to OpenAI's guidance for building autonomous agents on top of the Responses API and Agents SDK. As of the last update, no standalone `agent-kit` package is publicly available.
 >
-> **For AI Agents**: Use Agent Kit patterns for implementing autonomous agents with GPT models, tool orchestration, and state management.
+> **For AI Agents**: Reuse these patterns with the official OpenAI SDKs. Lean on the Responses API for orchestration, and load tools exactly as documented in the Agents SDK guide.
 
 ## Overview
 
-Agent Kit provides a high-level framework for building production-ready agents using OpenAI's models, with built-in support for tools, memory, and multi-step reasoning.
+OpenAI documentation references *Agent Kit* as a collection of higher-level patterns for agentic applications. The concepts build directly on the public Responses API, tool calling, and the Agents SDK. There is currently **no public GitHub repository or PyPI/NPM package** named `openai_agent_kit`; treat Agent Kit as an architectural guide rather than a standalone library. [R1]
 
-## Core Components
+## Current Status
 
-### Agent Setup
+- The GitHub repository referenced in early announcements (`https://github.com/openai/agent-kit`) returns 404 and is not publicly available.
+- There are no published packages named `openai_agent_kit` on PyPI or similar registries.
+- Build production agents by combining the [OpenAI Agents SDK](./agents-sdk.md) with the `openai` Python/TypeScript SDKs that expose the Responses API. [R1]
+
+## Implementation Patterns
+
+### Python Event Loop
 
 ```python
-from openai_agent_kit import Agent
+from openai import OpenAI
 
-agent = Agent(
-    model="gpt-4-turbo",
-    tools=["code_interpreter", "retrieval", "function_calling"],
-    memory_type="conversation_buffer"
-)
+client = OpenAI()
+
+def run_agent(task: str, *, metadata: dict | None = None, tools: list | None = None) -> str:
+    """Execute an agent task using the Responses API."""
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=[
+            {"role": "system", "content": "You are a helpful data analyst."},
+            {"role": "user", "content": task}
+        ],
+        tools=tools or [],
+        metadata=metadata or {}
+    )
+
+    return response.output_text
 ```
 
-### Tool Integration
+### Tool Definition
 
 ```python
-@agent.tool
-def search_database(query: str) -> str:
-    """Search the database for information."""
-    return database.search(query)
-
-@agent.tool
-def execute_code(code: str) -> str:
-    """Execute Python code safely."""
-    return sandbox.execute(code)
+search_database_tool = {
+    "type": "function",
+    "function": {
+        "name": "search_database",
+        "description": "Search the analytics warehouse for relevant information.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural language search query"
+                }
+            },
+            "required": ["query"]
+        }
+    }
+}
 ```
 
-### Orchestration
+### Orchestration Example
 
 ```python
-result = await agent.run(
-    "Analyze the sales data and create a report",
-    context={"data_source": "sales_db"}
-)
+def analyze_sales():
+    output = run_agent(
+        "Analyze the sales data and highlight the top three drivers.",
+        metadata={"data_source": "sales_db"},
+        tools=[search_database_tool]
+    )
+    return output
 ```
 
 ## See Also
@@ -65,5 +91,4 @@ result = await agent.run(
 
 ## References
 
-- [R1] OpenAI Agent Kit GitHub. https://github.com/openai/agent-kit (accessed 2025-10-24)
-- [R2] OpenAI Platform Documentation. https://platform.openai.com/docs (accessed 2025-10-24)
+- [R1] OpenAI Platform Documentation. https://platform.openai.com/docs (accessed 2025-10-24)

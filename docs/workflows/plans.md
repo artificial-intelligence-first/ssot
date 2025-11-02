@@ -102,7 +102,7 @@ Document choices inline:
 - **Decision**: Chose PostgreSQL over MySQL
   - Reason: Better JSON support for our use case
   - Trade-off: Slightly higher operational complexity
-  - Reference: [Database Comparison](../docs/database-comparison.md)
+  - Reference: [SSOT Guide – Data Contracts](../core/ssot-guide.md#data-contracts)
 ```
 
 ### Pattern: Blocker Management
@@ -316,9 +316,9 @@ Binary search through recent commits, profile suspicious code.
 
 ## See Also
 
-- [AGENTS.md](../AGENTS.md) - AI agent operational documentation
-- [Project Management](./project-management.md)
-- [Architecture Decision Records](./adr.md)
+- [Changelog Guide](./changelog.md)
+- [AGENTS.md](../../AGENTS.md) - AI agent operational documentation
+- [Contributing Guide](../governance/contributing.md)
 
 ## References
 

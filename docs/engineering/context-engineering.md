@@ -3,7 +3,7 @@ title: Context Engineering
 slug: context-engineering
 status: living
 last_updated: 2025-11-01
-tags: [context, rag, retrieval, prompt-engineering, ai-first]
+tags: [context, rag, retrieval, prompt-engineering, agents]
 summary: "Best practices for designing, retrieving, and evaluating context bundles that feed AI workflows across platforms."
 authors: []
 sources:
@@ -170,8 +170,8 @@ def evaluate_context_quality(context, query, response):
 ## See Also
 
 - [Prompt Engineering](./prompt-engineering.md)
-- [RAG Patterns](./rag-patterns.md)
-- [AGENTS.md](../AGENTS.md)
+- [Prompt Engineering](./prompt-engineering.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ## References
 

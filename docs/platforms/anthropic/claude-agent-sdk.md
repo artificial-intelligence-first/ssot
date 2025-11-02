@@ -41,16 +41,7 @@ pip install -e .
 
 ### JavaScript/TypeScript SDK
 
-```bash
-# Install from npm
-npm install @anthropic/claude-agent-sdk
-
-# Install with TypeScript types
-npm install @anthropic/claude-agent-sdk @types/node
-
-# Yarn installation
-yarn add @anthropic/claude-agent-sdk
-```
+Anthropic has not published an official Node.js package for the Agent SDK as of this update. Integrations typically rely on direct HTTP calls to the Claude API or thin wrappers you maintain in-house. [R1]
 
 ## Core Architecture
 
@@ -641,7 +632,7 @@ agent = Agent(
 
 - [Claude Code](./claude-code.md) - CLI and VS Code integration
 - [AGENTS.md](../../../AGENTS.md) - Operational documentation
-- [MCP](../../mcp.md) - Model Context Protocol
+- [MCP](../../tools/mcp.md) - Model Context Protocol
 
 ## References
 

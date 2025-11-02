@@ -3,7 +3,7 @@ title: AGENTS Guide
 slug: agents-guide
 status: living
 last_updated: 2025-11-01
-tags: [agents, conventions, documentation, development, ai-first]
+tags: [agents, conventions, documentation, workflow, best-practices]
 summary: "Comprehensive guide to AGENTS.md convention for AI-agent-friendly operational documentation."
 authors: []
 sources:

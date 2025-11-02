@@ -216,7 +216,7 @@ def load_config(path):
 ### Internal Links
 
 ```markdown
-See [SSOT principles](../SSOT.md#principles)
+See [SSOT principles](../../SSOT.md#principles)
 Refer to [Context Engineering](./context-engineering.md)
 ```
 
@@ -359,9 +359,9 @@ npx markdownlint --fix "**/*.md"
 
 ## See Also
 
-- [Frontmatter](./frontmatter.md) - Metadata specification
+- [Frontmatter](../core/frontmatter.md) - Metadata specification
 - [Contributing](./contributing.md) - Contribution guidelines
-- [SSOT.md](../SSOT.md) - Truth principles
+- [SSOT.md](../../SSOT.md) - Truth principles
 
 ## References
 

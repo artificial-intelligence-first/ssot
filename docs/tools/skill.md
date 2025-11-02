@@ -341,7 +341,7 @@ triggers:
 
 ## See Also
 
-- [AGENTS.md](../AGENTS.md) - AI agent operational documentation
+- [AGENTS.md](../../AGENTS.md) - AI agent operational documentation
 - [MCP](./mcp.md) - Model Context Protocol
 - [Progressive Disclosure](./progressive-disclosure.md)
 

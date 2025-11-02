@@ -197,7 +197,7 @@ context:
 
   important_files:
     - README.md
-    - docs/architecture.md
+    - docs/core/agents-guide.md
 
 conventions:
   naming: camelCase
@@ -420,7 +420,7 @@ chmod 600 ~/.claude/config.yaml
 
 - [Claude Agent SDK](./claude-agent-sdk.md)
 - [AGENTS.md](../../../AGENTS.md)
-- [MCP](../../mcp.md)
+- [MCP](../../tools/mcp.md)
 
 ## References
 

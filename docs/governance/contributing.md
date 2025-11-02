@@ -86,7 +86,7 @@ Run all validation before submitting:
 npx markdownlint "**/*.md"
 
 # Link check
-npx markdown-link-check docs/*.md
+find docs -name "*.md" -print0 | xargs -0 -n1 npx markdown-link-check
 
 # Frontmatter validation
 ./scripts/validate-frontmatter.sh
@@ -229,13 +229,13 @@ Reviewers check for:
 
 ```bash
 # Check for broken links
-find . -name "*.md" -exec markdown-link-check {} \;
+find docs -name "*.md" -print0 | xargs -0 -n1 npx markdown-link-check
 
 # Update dependencies
 npm update
 
 # Review draft documents
-grep -l "status: draft" docs/*.md
+rg -l "status: draft" docs
 ```
 
 ### Quarterly Tasks
@@ -330,10 +330,10 @@ All contributors are recognized in:
 
 ### Resources
 
-- [Issue Templates](./.github/ISSUE_TEMPLATE/)
+- [Issue Templates](../../.github/ISSUE_TEMPLATE/)
 - [Discussions](https://github.com/artificial-intelligence-first/ssot/discussions)
-- [Style Guide](./_meta/STYLE.md)
-- [Taxonomy](./_meta/TAXONOMY.md)
+- [Style Guide](./style.md)
+- [Taxonomy](./taxonomy.md)
 
 ### Communication
 
@@ -348,10 +348,10 @@ By contributing, you agree that your contributions will be licensed under the re
 
 ## See Also
 
-- [SSOT.md](../SSOT.md) - Single Source of Truth principles
-- [AGENTS.md](../AGENTS.md) - AI agent operations
-- [Style Guide](./_meta/STYLE.md) - Writing standards
-- [Taxonomy](./_meta/TAXONOMY.md) - Controlled vocabulary
+- [SSOT.md](../../SSOT.md) - Single Source of Truth principles
+- [AGENTS.md](../../AGENTS.md) - AI agent operations
+- [Style Guide](./style.md) - Writing standards
+- [Taxonomy](./taxonomy.md) - Controlled vocabulary
 
 ## References
 

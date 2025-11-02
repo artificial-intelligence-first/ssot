@@ -3,7 +3,7 @@ title: Prompt Engineering
 slug: prompt-engineering
 status: living
 last_updated: 2025-11-01
-tags: [prompt-engineering, prompting, ai-first, best-practices]
+tags: [prompt-engineering, prompting, agents, best-practices]
 summary: "Cross-platform prompt engineering best practices from major AI providers for reliable AI outputs."
 authors: []
 sources:
@@ -259,8 +259,8 @@ final_answer = find_consensus(outputs)
 ## See Also
 
 - [Context Engineering](./context-engineering.md)
-- [AGENTS.md](../AGENTS.md)
-- [Platform Guides](./platforms/)
+- [LangChain Guide](../platforms/langchain/langchain.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ## References
 

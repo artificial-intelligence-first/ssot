@@ -281,13 +281,13 @@ find docs -name "*.md" -exec sed -i 's/ai-first/agents/g' {} \;
 
 ```bash
 # Count tag usage
-grep -h "tags:" docs/*.md | tr -d '[]' | tr ',' '\n' | sort | uniq -c
+rg -ho '^tags:.*' docs | tr -d '[]' | tr ',' '\n' | sort | uniq -c
 
 # Find untagged documents
-grep -L "tags:" docs/*.md
+rg --files-without-match '^tags:' docs
 
 # Find over-tagged documents
-grep "tags:" docs/*.md | awk -F',' 'NF>7 {print NR, $0}'
+rg -n '^tags:' docs | awk -F',' 'NF>7 {print $0}'
 ```
 
 ### Coverage Report
@@ -319,7 +319,7 @@ Monitor taxonomy coverage:
 
 ## See Also
 
-- [Frontmatter](./frontmatter.md) - Metadata specification
+- [Frontmatter](../core/frontmatter.md) - Metadata specification
 - [Style](./style.md) - Documentation standards
 - [Contributing](./contributing.md) - How to contribute
 

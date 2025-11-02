@@ -67,33 +67,26 @@ import json
 from typing import Dict, Any, List
 
 class Agent:
-    """Basic OpenAI agent with tool calling."""
+    """Basic OpenAI agent powered by the Responses API."""
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str | None = None, model: str = "gpt-4.1-mini"):
         self.client = OpenAI(api_key=api_key)
-        self.conversation = []
-        self.tools = []
+        self.model = model
+        self.tools: List[Dict[str, Any]] = []
 
     def add_tool(self, tool: Dict[str, Any]):
         """Register a tool for the agent."""
         self.tools.append(tool)
 
-    async def run(self, prompt: str) -> str:
-        """Execute agent with user prompt."""
-        self.conversation.append({"role": "user", "content": prompt})
-
-        response = self.client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=self.conversation,
+    def run(self, prompt: str) -> str:
+        """Execute the agent with a user prompt."""
+        response = self.client.responses.create(
+            model=self.model,
+            input=prompt,
             tools=self.tools,
-            tool_choice="auto"
         )
 
-        # Handle tool calls if present
-        if response.choices[0].message.tool_calls:
-            await self.handle_tool_calls(response.choices[0].message)
-
-        return response.choices[0].message.content
+        return response.output_text
 ```
 
 ### TypeScript Implementation
@@ -112,8 +105,8 @@ interface Tool {
 
 class Agent {
   private client: OpenAI;
-  private conversation: OpenAI.ChatCompletionMessageParam[] = [];
   private tools: Tool[] = [];
+  private readonly model = 'gpt-4.1-mini';
 
   constructor(apiKey?: string) {
     this.client = new OpenAI({ apiKey });
@@ -124,22 +117,13 @@ class Agent {
   }
 
   async run(prompt: string): Promise<string> {
-    this.conversation.push({ role: 'user', content: prompt });
-
-    const response = await this.client.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: this.conversation,
-      tools: this.tools,
-      tool_choice: 'auto'
+    const response = await this.client.responses.create({
+      model: this.model,
+      input: prompt,
+      tools: this.tools
     });
 
-    const message = response.choices[0].message;
-
-    if (message.tool_calls) {
-      await this.handleToolCalls(message);
-    }
-
-    return message.content || '';
+    return response.output_text ?? '';
   }
 }
 ```
@@ -248,38 +232,42 @@ class TaskOutput(BaseModel):
     confidence: float
 
 # Using structured output
-response = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "system", "content": "Generate structured task output"},
-        {"role": "user", "content": "Plan a code review process"}
-    ],
-    response_format={"type": "json_object"},
-    functions=[{
-        "name": "output_task",
-        "parameters": TaskOutput.schema()
-    }]
+schema = TaskOutput.model_json_schema()
+
+response = client.responses.create(
+    model="gpt-4.1-mini",
+    input="Plan a code review process.",
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "task_output",
+            "schema": schema
+        }
+    }
 )
+
+parsed = TaskOutput.model_validate_json(response.output_text)
 ```
 
 ### Streaming Responses
 
 ```python
-async def stream_response(prompt: str):
+def stream_response(prompt: str) -> str:
     """Stream responses for real-time output."""
-    stream = client.chat.completions.create(
-        model="gpt-4-turbo-preview",
-        messages=[{"role": "user", "content": prompt}],
-        stream=True
-    )
+    output_chunks: list[str] = []
 
-    collected_messages = []
-    for chunk in stream:
-        chunk_message = chunk.choices[0].delta.content or ""
-        collected_messages.append(chunk_message)
-        print(chunk_message, end="")
+    with client.responses.stream(
+        model="gpt-4.1-mini",
+        input=prompt,
+    ) as stream:
+        for event in stream:
+            if event.type == "response.output_text.delta":
+                print(event.delta, end="", flush=True)
+                output_chunks.append(event.delta)
 
-    return "".join(collected_messages)
+        final_response = stream.get_final_response()
+
+    return final_response.output_text or "".join(output_chunks)
 ```
 
 ## Advanced Patterns
@@ -297,20 +285,17 @@ class OrchestratorAgent:
             "reviewer": ReviewAgent()
         }
 
-    async def execute_workflow(self, task: str):
+    def execute_workflow(self, task: str):
         """Execute multi-agent workflow."""
-        # Research phase
-        research = await self.agents["researcher"].run(
+        research = self.agents["researcher"].run(
             f"Research requirements for: {task}"
         )
 
-        # Coding phase
-        code = await self.agents["coder"].run(
+        code = self.agents["coder"].run(
             f"Implement based on research: {research}"
         )
 
-        # Review phase
-        review = await self.agents["reviewer"].run(
+        review = self.agents["reviewer"].run(
             f"Review this implementation: {code}"
         )
 
@@ -370,9 +355,9 @@ class RobustAgent:
     async def call_api(self, messages: List[dict]):
         """Make API call with retry logic."""
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4-turbo-preview",
-                messages=messages,
+            response = self.client.responses.create(
+                model="gpt-4.1-mini",
+                input=messages,
                 timeout=30
             )
             return response
@@ -440,21 +425,16 @@ class TestAgent:
     def test_basic_response(self, mock_openai, agent):
         # Mock API response
         mock_response = Mock()
-        mock_response.choices = [Mock(message=Mock(content="Test response"))]
-        mock_openai.return_value.chat.completions.create.return_value = mock_response
+        mock_response.output_text = "Test response"
+        mock_openai.return_value.responses.create.return_value = mock_response
 
         result = agent.run("Test prompt")
         assert result == "Test response"
 
-    @pytest.mark.asyncio
-    async def test_tool_calling(self, agent):
-        # Add test tool
-        agent.add_tool(calculator_tool)
-
-        # Mock tool execution
-        with patch.object(agent, 'handle_tool_calls') as mock_handler:
-            await agent.run("Calculate 2 + 2")
-            assert mock_handler.called
+    def test_tool_registration(self, agent):
+        tool = {"type": "function", "function": {"name": "demo", "parameters": {}}}
+        agent.add_tool(tool)
+        assert tool in agent.tools
 ```
 
 ### Integration Testing
@@ -462,19 +442,15 @@ class TestAgent:
 ```python
 @pytest.mark.integration
 class TestIntegration:
-    async def test_full_workflow(self):
+    def test_full_workflow(self):
         """Test complete agent workflow."""
         agent = Agent()
-        agent.add_tool(calculator_tool)
-        agent.add_tool(database_tool)
 
-        # Execute complex task
-        result = await agent.run(
-            "Calculate the average order value from the database"
-        )
+        with patch.object(agent.client.responses, "create") as mock_create:
+            mock_create.return_value.output_text = "Average order value is $42"
+            result = agent.run("Calculate the average order value from the database")
 
-        assert "average" in result.lower()
-        assert agent.conversation[-1]["role"] == "assistant"
+        assert "average order value" in result.lower()
 ```
 
 ## Performance Optimization
@@ -514,14 +490,14 @@ class CachedAgent:
         content = json.dumps(messages, sort_keys=True)
         return hashlib.md5(content.encode()).hexdigest()
 
-    async def run(self, prompt: str):
+    def run(self, prompt: str):
         """Run with caching."""
         cache_key = self.get_cache_key(self.conversation + [{"role": "user", "content": prompt}])
 
         if cache_key in self.cache:
             return self.cache[cache_key]
 
-        response = await self.call_api(prompt)
+        response = self.call_api(prompt)
         self.cache[cache_key] = response
         return response
 ```

@@ -47,7 +47,7 @@ sources: []                 # Optional source references
 | `slug` | String | Yes | `^[a-z0-9]+(-[a-z0-9]+)*$`, 3-64 chars | "context-engineering" |
 | `status` | Enum | Yes | draft\|living\|stable\|deprecated | "living" |
 | `last_updated` | Date | Yes | ISO 8601 (YYYY-MM-DD) | "2025-11-01" |
-| `tags` | Array | Yes | Max 7 items, lowercase | ["ai-first", "documentation"] |
+| `tags` | Array | Yes | Max 7 items, lowercase | ["agents", "documentation"] |
 | `summary` | String | Yes | Max 160 chars, no newlines | "Best practices for AI context design." |
 | `authors` | Array | No | Display names | ["Alice Smith", "bob"] |
 | `sources` | Array | No | Max 10 items | See sources format below |
@@ -286,14 +286,18 @@ assignees: [username]
 ### Validation Script
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 # validate-frontmatter.sh
 
-for file in docs/*.md; do
+find docs -name "*.md" -print0 | while IFS= read -r -d '' file; do
   echo "Checking $file..."
 
   # Extract frontmatter
-  frontmatter=$(sed -n '1,/^---$/p' "$file")
+  frontmatter=$(awk '
+    NR==1 && $0=="---" {in_frontmatter=1; next}
+    in_frontmatter && $0=="---" {exit}
+    in_frontmatter {print}
+  ' "$file")
 
   # Check required fields
   for field in title slug status last_updated tags summary; do
@@ -324,9 +328,9 @@ def generate_frontmatter(title, tags=None):
 
 ## See Also
 
-- [SSOT.md](../SSOT.md) - Single Source of Truth principles
-- [Documentation Standards](./documentation-standards.md)
-- [Markdown Guide](./markdown-guide.md)
+- [SSOT.md](../../SSOT.md) - Single Source of Truth principles
+- [Style](../governance/style.md) - Repository-wide writing standards
+- [Taxonomy](../governance/taxonomy.md) - Controlled vocabulary for tags
 
 ## References
 

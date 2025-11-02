@@ -400,9 +400,9 @@ class DatabaseMCPServer(Server):
 
 ## See Also
 
-- [AGENTS.md](../AGENTS.md) - AI agent operations
+- [AGENTS.md](../../AGENTS.md) - AI agent operations
 - [Skill.md](./skill.md) - Agent skills specification
-- [API Design](./api-design.md) - API best practices
+- [A2A Protocol](../platforms/google/a2a.md) - Inter-agent communication standard
 
 ## References
 
