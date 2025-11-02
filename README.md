@@ -55,29 +55,13 @@ ssot/
 ├── README.md                 # This file
 ├── docs/                     # All documentation
 │   ├── core/                 # Core concepts & detailed guides
-│   │   ├── agents-guide.md   # Comprehensive AGENTS.md guide
-│   │   ├── ssot-guide.md     # Comprehensive SSOT guide
-│   │   └── frontmatter.md    # Frontmatter specification
 │   ├── engineering/          # Engineering methodologies
-│   │   ├── context-engineering.md
-│   │   └── prompt-engineering.md
 │   ├── governance/           # Governance & standards
-│   │   ├── contributing.md   # Contribution guidelines
-│   │   ├── style.md          # Documentation style guide
-│   │   └── taxonomy.md       # Controlled vocabulary
 │   ├── platforms/            # Platform-specific implementations
-│   │   ├── anthropic/        # Claude Agent SDK, Claude Code, Petri
-│   │   ├── openai/           # Agents SDK, Agent Kit, Codex
-│   │   ├── google/           # A2A Protocol, ADK
-│   │   └── langchain/        # LangChain, LangGraph
+│   ├── research/             # Information about AI research
 │   ├── systems/              # System tools
-│   │   └── git-worktree.md   # Git worktree guide
 │   ├── tools/                # Development tools
-│   │   ├── mcp.md            # Model Context Protocol
-│   │   └── skill.md          # Agent Skills specification
 │   └── workflows/            # Workflow management
-│       ├── changelog.md      # Changelog format
-│       └── plans.md          # ExecPlans workflow
 └── _templates/               # Document templates
     ├── TOPIC_TEMPLATE.md     # New topic template
     └── SECTION_TEMPLATE.md   # Section templates
