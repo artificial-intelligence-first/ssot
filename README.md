@@ -145,7 +145,6 @@ ls docs/*.md | xargs head -n 20 | grep "^title:"
 - **Anthropic**: Claude, Agent SDK
 - **OpenAI**: GPT models, Agents SDK
 - **Google**: Gemini, Vertex AI
-- **LangChain**: Framework integration
 - **MCP**: Model Context Protocol
 
 ### Integration Examples
