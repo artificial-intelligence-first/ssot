@@ -13,6 +13,7 @@ sources:
   - { id: R4, title: "openai-node - Official Node.js SDK", url: "https://github.com/openai/openai-node", accessed: "2025-10-24" }
   - { id: R5, title: "OpenAI Streaming Guide", url: "https://platform.openai.com/docs/guides/streaming", accessed: "2025-10-24" }
   - { id: R6, title: "New tools and features in the Responses API", url: "https://openai.com/index/new-tools-and-features-in-the-responses-api/", accessed: "2025-10-24" }
+  - { id: R7, title: "OpenAI Agents JavaScript/TypeScript SDK", url: "https://github.com/openai/openai-agents-js", accessed: "2025-11-03" }
 ---
 
 # OpenAI Agents SDK
@@ -657,3 +658,4 @@ class RateLimitedAgent:
 - [R4] openai-node - Official Node.js SDK. https://github.com/openai/openai-node (accessed 2025-10-24)
 - [R5] OpenAI Streaming Guide. https://platform.openai.com/docs/guides/streaming (accessed 2025-10-24)
 - [R6] New tools and features in the Responses API. https://openai.com/index/new-tools-and-features-in-the-responses-api/ (accessed 2025-10-24)
+- [R7] OpenAI Agents JavaScript/TypeScript SDK. https://github.com/openai/openai-agents-js (accessed 2025-11-03)
