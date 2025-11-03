@@ -9,6 +9,7 @@ authors: []
 sources:
   - { id: R1, title: "Google Cloud Vertex AI Agent Builder", url: "https://cloud.google.com/vertex-ai/docs/agents", accessed: "2025-10-23" }
   - { id: R2, title: "Vertex AI SDK Documentation", url: "https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk", accessed: "2025-10-23" }
+  - { id: R3, title: "ADK JavaScript/TypeScript SDK", url: "https://github.com/google/adk-js", accessed: "2025-11-03" }
 ---
 
 # ADK
@@ -69,3 +70,4 @@ agent.serve(endpoint=endpoint)
 
 - [R1] Google Cloud Vertex AI Agent Builder. https://cloud.google.com/vertex-ai/docs/agents (accessed 2025-10-23)
 - [R2] Vertex AI SDK Documentation. https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk (accessed 2025-10-23)
+- [R3] ADK JavaScript/TypeScript SDK. https://github.com/google/adk-js (accessed 2025-11-03)

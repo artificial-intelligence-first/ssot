@@ -10,6 +10,7 @@ sources:
   - { id: R1, title: "Claude Agent SDK Overview", url: "https://docs.claude.com/en/api/agent-sdk/overview", accessed: "2025-10-23" }
   - { id: R2, title: "Claude Agent SDK Python GitHub", url: "https://github.com/anthropics/claude-agent-sdk-python", accessed: "2025-10-23" }
   - { id: R3, title: "Building Agents with the Claude Agent SDK", url: "https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk", accessed: "2025-10-23" }
+  - { id: R4, title: "Claude Agent SDK TypeScript GitHub", url: "https://github.com/anthropics/claude-agent-sdk-typescript", accessed: "2025-11-03" }
 ---
 
 # Claude Agent SDK
@@ -639,3 +640,4 @@ agent = Agent(
 - [R1] Claude Agent SDK Overview. https://docs.claude.com/en/api/agent-sdk/overview (accessed 2025-10-23)
 - [R2] Claude Agent SDK Python GitHub. https://github.com/anthropics/claude-agent-sdk-python (accessed 2025-10-23)
 - [R3] Building Agents with the Claude Agent SDK. https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk (accessed 2025-10-23)
+- [R4] Claude Agent SDK TypeScript GitHub. https://github.com/anthropics/claude-agent-sdk-typescript (accessed 2025-11-03)
