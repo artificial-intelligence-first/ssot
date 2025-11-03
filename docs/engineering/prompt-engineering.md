@@ -259,7 +259,6 @@ final_answer = find_consensus(outputs)
 ## See Also
 
 - [Context Engineering](./context-engineering.md)
-- [LangChain Guide](../platforms/langchain/langchain.md)
 - [AGENTS.md](../../AGENTS.md)
 
 ## References

@@ -56,7 +56,6 @@ Platform and vendor tags:
 | `anthropic` | Anthropic Claude and tools | Claude-specific docs |
 | `openai` | OpenAI GPT and tools | GPT-specific docs |
 | `google` | Google AI and Vertex | Google AI docs |
-| `langchain` | LangChain framework | LangChain guides |
 | `azure` | Microsoft Azure AI | Azure AI docs |
 | `aws` | Amazon Web Services AI | AWS AI docs |
 
