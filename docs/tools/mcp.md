@@ -2,13 +2,14 @@
 title: MCP
 slug: mcp
 status: living
-last_updated: 2025-11-01
+last_updated: 2025-11-05
 tags: [mcp, protocol, integration, anthropic]
 summary: "Model Context Protocol for seamless LLM integration with external data sources and tools."
 authors: []
 sources:
   - { id: R1, title: "Model Context Protocol Documentation", url: "https://modelcontextprotocol.io/", accessed: "2025-10-23" }
   - { id: R2, title: "MCP GitHub Repository", url: "https://github.com/modelcontextprotocol/servers", accessed: "2025-10-23" }
+  - { id: R3, title: "Code Execution with MCP", url: "https://www.anthropic.com/engineering/code-execution-with-mcp", accessed: "2025-11-05" }
 ---
 
 # MCP
@@ -42,6 +43,135 @@ Model Context Protocol (MCP) is an open protocol that standardizes how LLMs conn
 2. **Message Layer**: JSON-RPC 2.0
 3. **Capability Layer**: Resources, tools, prompts
 4. **Security Layer**: Authentication, authorization
+
+## Code Execution Pattern
+
+MCP supports a code execution pattern where AI agents write code to call tools rather than using direct tool calls. This approach significantly improves efficiency and reduces token consumption.
+
+### Benefits
+
+**Progressive Disclosure**: Models navigate filesystems to discover tools on-demand rather than loading all tool definitions upfront. This reduces initial token consumption from ~150,000 to ~2,000 tokens (98.7% savings).
+
+**Context Efficiency**: Large datasets can be filtered and transformed in code before display, preventing context bloat.
+
+**Control Flow**: Complex operations use familiar programming patterns (loops, conditionals, error handling) instead of chaining individual tool calls.
+
+**Privacy Preservation**: Intermediate results remain in the execution environment by default. The system can tokenize personally identifiable information (PII) automatically, allowing sensitive data to flow between services without exposing it to the model.
+
+**State Persistence**: Agents maintain state across operations through file storage, enabling work resumption and progress tracking.
+
+**Skills Development**: Agents can save reusable functions as persistent skills for future use.
+
+### Architecture
+
+```
+┌─────────────┐
+│   AI Agent  │
+└──────┬──────┘
+       │ Writes code
+       ▼
+┌─────────────────────┐
+│ Sandboxed Execution │
+│   Environment       │
+└──────┬──────────────┘
+       │ Calls tools
+       ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ MCP Server  │     │ MCP Server  │     │ MCP Server  │
+│   (API 1)   │     │   (API 2)   │     │   (API 3)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Filesystem-Based Tool Organization
+
+```
+tools/
+├── search_tools/           # Tool discovery
+│   └── search.ts
+├── github/                 # GitHub API
+│   ├── issues.ts
+│   └── repositories.ts
+├── database/              # Database access
+│   ├── query.ts
+│   └── schema.ts
+└── filesystem/            # File operations
+    ├── read.ts
+    └── write.ts
+```
+
+### Example: Tool Definition
+
+```typescript
+// tools/github/issues.ts
+export interface GetIssuesParams {
+  owner: string;
+  repo: string;
+  state?: 'open' | 'closed' | 'all';
+  detail_level?: 'minimal' | 'standard' | 'full';
+}
+
+export interface Issue {
+  number: number;
+  title: string;
+  state: string;
+  body?: string;  // Only included with detail_level >= 'standard'
+  comments?: Comment[];  // Only with detail_level === 'full'
+}
+
+export async function getIssues(
+  params: GetIssuesParams
+): Promise<Issue[]> {
+  // Implementation
+}
+```
+
+### Example: Agent Code
+
+```typescript
+// Agent discovers and uses tools
+import { search } from './tools/search_tools/search.ts';
+import { getIssues } from './tools/github/issues.ts';
+
+// Find relevant tools
+const tools = await search('github issues');
+
+// Call tool with minimal detail level
+const issues = await getIssues({
+  owner: 'anthropic',
+  repo: 'mcp',
+  state: 'open',
+  detail_level: 'minimal'
+});
+
+// Filter before returning to model
+const criticalIssues = issues.filter(i =>
+  i.title.toLowerCase().includes('critical')
+);
+
+// Return only what's needed
+console.log(`Found ${criticalIssues.length} critical issues`);
+```
+
+### Security Considerations
+
+Running agent-generated code requires:
+
+1. **Secure Execution Environment**: Sandboxed environment with appropriate isolation
+2. **Resource Limits**: CPU, memory, and time constraints
+3. **Network Controls**: Restricted outbound connections
+4. **Monitoring**: Logging and observability for executed code
+5. **PII Tokenization**: Automatic handling of sensitive data
+
+These infrastructure requirements add operational overhead that must be weighed against efficiency gains.
+
+### Best Practices for Code Execution
+
+1. **Tool Discovery**: Implement `search_tools` functionality for efficient tool location
+2. **Detail Levels**: Provide parameters allowing agents to select information granularity
+3. **Data Filtering**: Process large datasets in code before returning to model
+4. **State Management**: Use file storage for persistence across operations
+5. **Skill Reuse**: Save common functions with SKILL.md documentation
+6. **Token Efficiency**: Keep tool definitions concise and discoverable
 
 ## Server Implementation
 
@@ -408,3 +538,4 @@ class DatabaseMCPServer(Server):
 
 - [R1] Model Context Protocol Documentation. https://modelcontextprotocol.io/ (accessed 2025-10-23)
 - [R2] MCP GitHub Repository. https://github.com/modelcontextprotocol/servers (accessed 2025-10-23)
+- [R3] Code Execution with MCP. https://www.anthropic.com/engineering/code-execution-with-mcp (accessed 2025-11-05)
