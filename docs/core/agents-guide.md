@@ -4,7 +4,7 @@ slug: agents-guide
 status: living
 last_updated: 2025-11-01
 tags: agents, conventions, documentation, workflow, best-practices
-summary: "Comprehensive guide to AGENTS.md convention for AI-agent-friendly operational documentation."
+summary: Comprehensive guide to AGENTS.md convention for AI-agent-friendly operational documentation.
 authors: Naru Kijima
 sources:
   - { id: R1, title: "AGENTS.md Official Website", url: "https://agents.md", accessed: "2025-10-23" }
