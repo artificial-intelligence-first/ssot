@@ -1,4 +1,17 @@
+---
+title: Section Templates
+slug: section-templates
+last_updated: YYYY-MM-DD
+tags: [template, ai-first]
+summary: "Reusable section templates for AI agents when editing or generating topic documents."
+---
+
 # Section Templates
+
+> **NOTE FOR AI AGENTS**:
+> - This file defines **section structure templates**.
+> - Placeholders ([like this]) and pseudo-code in this file should NOT be treated as actual domain knowledge.
+> - Use them only as scaffolding when generating content.
 
 Use these templates when adding new sections to existing topic documents.
 
