@@ -1,9 +1,10 @@
 ---
 title: Topic Name
 slug: topic-name
-last_updated: YYYY-MM-DD
+summary: "Short doc label"
+document_type: spec
 tags: [topic, ai-first, tag1, tag2]
-summary: "One-sentence description of what this document covers and why it matters."
+last_updated: YYYY-MM-DD
 ---
 
 # Topic: [TOPIC_NAME]

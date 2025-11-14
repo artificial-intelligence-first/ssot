@@ -1,9 +1,10 @@
 ---
 title: Section Templates
 slug: section-templates
-last_updated: YYYY-MM-DD
+summary: "Section Templates"
+document_type: reference
 tags: [template, ai-first]
-summary: "Reusable section templates for AI agents when editing or generating topic documents."
+last_updated: YYYY-MM-DD
 ---
 
 # Section Templates

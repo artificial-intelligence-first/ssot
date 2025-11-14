@@ -1,9 +1,10 @@
 ---
 title: Agent Skill All Model
 slug: agent-skill
-last_updated: 2025-11-13
+summary: "Agent Skill Spec"
+document_type: spec
 tags: [topic, ai-first, agent, skill, specification]
-summary: "Vendor-neutral specification for defining agent skills that can be reused consistently across all language models and execution environments."
+last_updated: 2025-11-13
 ---
 
 # Topic: Agent Skill All Model - Universal Specification
