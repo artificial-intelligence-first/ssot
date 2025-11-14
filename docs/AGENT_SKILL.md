@@ -2,7 +2,7 @@
 title: Agent Skill All Model
 slug: agent-skill
 summary: "Agent Skill Spec"
-document_type: spec
+type: spec
 tags: [topic, ai-first, agent, skill, specification]
 last_updated: 2025-11-13
 ---
