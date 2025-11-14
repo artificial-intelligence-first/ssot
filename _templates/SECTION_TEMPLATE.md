@@ -2,7 +2,7 @@
 title: Section Templates
 slug: section-templates
 summary: "Section Templates"
-document_type: reference
+type: reference
 tags: [template, ai-first]
 last_updated: YYYY-MM-DD
 ---

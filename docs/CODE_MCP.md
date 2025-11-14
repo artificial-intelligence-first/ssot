@@ -2,7 +2,7 @@
 title: Code MCP
 slug: code-mcp
 summary: "Code MCP Guide"
-document_type: guide
+type: guide
 tags: [topic, ai-first, agent, mcp, code, optimization]
 last_updated: 2025-11-13
 ---
