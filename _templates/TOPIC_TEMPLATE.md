@@ -1,13 +1,9 @@
 ---
 title: Topic Name
 slug: topic-name
-status: draft
 last_updated: YYYY-MM-DD
 tags: [tag1, tag2, tag3]
 summary: "One-sentence description of what this document covers and why it matters."
-sources:
-  - { id: R1, title: "Source Title", url: "https://example.com", accessed: "YYYY-MM-DD" }
-  - { id: R2, title: "Another Source", url: "https://example.com", accessed: "YYYY-MM-DD" }
 ---
 
 # Topic Name
