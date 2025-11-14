@@ -1,9 +1,10 @@
 ---
 title: Code MCP
 slug: code-mcp
-last_updated: 2025-11-13
+summary: "Code MCP Guide"
+document_type: guide
 tags: [topic, ai-first, agent, mcp, code, optimization]
-summary: "Model-agnostic code execution approach for MCP implementations achieving 98.7% token reduction through sandbox-based execution and progressive disclosure."
+last_updated: 2025-11-13
 ---
 
 # Topic: Code MCP — Model-Agnostic Code Execution MCP Implementation Guide
