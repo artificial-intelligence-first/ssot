@@ -1,10 +1,10 @@
 ---
 title: Agent Skill All Model
 slug: agent-skill
-summary: "Agent Skill Spec"
+summary: "Skill spec overview"
 type: spec
 tags: [topic, ai-first, agent, skill, specification]
-last_updated: 2025-11-13
+last_updated: 2025-11-14
 ---
 
 # Topic: Agent Skill All Model - Universal Specification
@@ -780,8 +780,37 @@ metadata:
 
 ---
 
+## 19. Practical Skill Examples
+
+### 19.1 Frontend Development Skills
+
+The **web-artifacts-builder** skill demonstrates how skills can dramatically improve frontend output quality while minimizing context overhead. Key characteristics:
+
+- **Modern tooling integration**: React, Tailwind CSS, shadcn/ui components
+- **Embedded scripts** for bootstrapping repositories and bundling with Parcel
+- **Design guidance** addressing typography, themes, motion, and backgrounds
+- **Progressive enhancement** supporting iterative refinement
+
+Frontend skills should address specific design dimensions:
+- **Typography**: Distinctive font choices with high contrast pairings
+- **Themes**: Cultural aesthetics and cohesive color palettes
+- **Motion**: Orchestrated animations and CSS-only solutions
+- **Backgrounds**: Layered gradients and patterns for atmospheric depth
+
+> Any domain where models produce generic outputs despite having more expansive understanding is a candidate for skill development. Skills enable teams to encode company design systems and component patterns into reusable modules. ([Improving frontend design through skills](https://claude.com/blog/improving-frontend-design-through-skills))
+
+### 19.2 Document Processing Skills
+
+Pre-configured skills for document generation (presentations/spreadsheets/documents/PDFs) demonstrate the pattern of combining:
+- Declarative capabilities in `skill.yaml`
+- Executable scripts for automation
+- Templates for consistent output formatting
+
+---
+
 ## Update Log
 
+- **2025-11-14** – Added Section 19 (Practical Skill Examples) with frontend and document processing examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering manifest structure, three-layer model, permissions, safety, progressive disclosure, and dual runtime support. (Author: AI-First)
 
 ---
