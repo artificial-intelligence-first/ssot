@@ -1,10 +1,10 @@
 ---
 title: Code MCP
 slug: code-mcp
-summary: "Code MCP Guide"
-type: guide
+summary: "Code MCP guide"
+type: reference
 tags: [topic, ai-first, agent, mcp, code, optimization]
-last_updated: 2025-11-13
+last_updated: 2025-11-14
 ---
 
 # Topic: Code MCP — Model-Agnostic Code Execution MCP Implementation Guide
@@ -924,8 +924,66 @@ async function callMCPTool(tool: string, input: any, opts?: CallOptions) {
 
 ---
 
+## 16. Practical Examples
+
+### 16.1 Document Processing Workflow
+
+**Requirement**: Retrieve meeting transcript, summarize, and update CRM
+
+```ts
+import * as gdrive from "../servers/google-drive";
+import * as salesforce from "../servers/salesforce";
+
+// Retrieve large document
+const transcript = (await gdrive.getDocument({
+  documentId: "abc123"
+})).content;
+
+// Process within sandbox (not exposed to model)
+const notes = summarize(transcript);  // 10,000 lines → 500 words
+
+// Update CRM with summary
+await salesforce.updateRecord({
+  objectType: "SalesMeeting",
+  recordId: "00Q5f000001abcXYZ",
+  data: { Notes: notes }
+});
+
+// Only this summary goes to model
+console.log("✓ CRM updated with summarized notes");
+```
+
+### 16.2 Data Analysis Pipeline
+
+```python
+import servers.sheets as sheets
+import servers.analytics as analytics
+
+# Fetch large dataset
+data = await sheets.get_all_rows({"sheetId": "quarterly"})
+print(f"Processing {len(data)} records...")  # Model sees count
+
+# Heavy processing in sandbox
+metrics = calculate_metrics(data)
+anomalies = detect_anomalies(data)
+
+# Only send insights to model
+print(f"Key insights: {metrics['summary']}")
+print(f"Anomalies detected: {len(anomalies)}")
+
+# Store detailed results
+await analytics.save_report({
+  "reportId": "Q4-2024",
+  "metrics": metrics,
+  "anomalies": anomalies[:10]  # Limit exposure
+})
+```
+
+---
+
 ## Update Log
 
+- **2025-11-14** – Added Section 16 (Practical Examples) with document processing and data analysis pipeline examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering Code MCP architecture, implementation patterns, progressive disclosure, sandbox execution, security practices, and cost optimization strategies. (Author: AI-First)
 
 ---
