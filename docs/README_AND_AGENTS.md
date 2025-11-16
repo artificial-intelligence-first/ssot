@@ -11,55 +11,38 @@ last_updated: 2025-11-15
 
 ## Agent Contract
 
-**Purpose**: This document provides a comprehensive specification for using README.md and AGENTS.md files in AI-first repository architectures, establishing clear patterns for documentation placement, content structure, and the relationship between human-facing and AI-facing documentation.
-
-**When to Use**:
-- Setting up new repositories with AI agent collaboration
-- Refactoring existing repositories for AI-first workflows
-- Establishing documentation standards across multi-agent systems
-- Creating monorepos with multiple autonomous subsystems
-
-**Priority**:
-- **MUST**: Place README.md at repository root for human orientation
-- **MUST**: Place AGENTS.md at repository root as AI agent catalog
-- **SHOULD**: Add subdirectory README.md/AGENTS.md only at "worldview boundaries"
-- **SHOULD NOT**: Create documentation in implementation-detail directories
-
-**Related Topics**:
-- Repository structure optimization
-- Multi-agent system architecture
-- Documentation as code
-- Knowledge management systems
+- **PURPOSE**:
+  - Provide a comprehensive specification for using README.md and AGENTS.md files in AI-first repository architectures
+  - Establish clear patterns for documentation placement, content structure, and the relationship between human-facing and AI-facing documentation
+  - Define worldview boundaries and navigation patterns for hierarchical documentation
+- **USE_WHEN**:
+  - Setting up new repositories with AI agent collaboration
+  - Refactoring existing repositories for AI-first workflows
+  - Establishing documentation standards across multi-agent systems
+  - Creating monorepos with multiple autonomous subsystems
+- **DO_NOT_USE_WHEN**:
+  - Building single-file scripts or tools without agent collaboration
+  - Creating implementation-detail directories (src/*, lib/*, utils/*)
+  - Working on repositories where AI agents are not collaborators
+- **PRIORITY**:
+  - README.md at repository root is MANDATORY for human orientation
+  - AGENTS.md at repository root is MANDATORY for AI agent catalog
+  - Subdirectory documentation ONLY at worldview boundaries (apps/*, packages/*, services/*)
+  - NEVER create documentation in implementation-detail directories
+- **RELATED_TOPICS**:
+  - agent-skill
+  - code-mcp
+  - repository-structure
+  - multi-agent-architecture
+  - documentation-as-code
 
 ## TL;DR
 
-### What
-A dual-documentation pattern separating human-facing (README.md) and AI-facing (AGENTS.md) concerns across repository hierarchies.
-
-### Why
-- **Separation of Concerns**: Humans need context and setup; AI agents need operational specifications
-- **Discoverability**: Predictable locations enable both humans and AI to find guidance quickly
-- **Scalability**: Hierarchical documentation prevents information overload in large repositories
-- **Maintainability**: Clear ownership boundaries reduce documentation drift
-
-### When
-- Repository initialization
-- Adding new subsystems or services
-- Introducing AI agents to existing projects
-- Refactoring monorepo structures
-
-### How
-1. Create root-level README.md (repository orientation) and AGENTS.md (agent catalog)
-2. Link between them for navigation
-3. Add subdirectory versions only at architectural boundaries (apps/*, packages/*, services/*)
-4. Avoid documentation in implementation folders (src/*, lib/*, utils/*)
-5. Maintain parent (map) vs. child (guidebook) relationship
-
-### Watch Out
-- Over-documentation in low-level directories creates maintenance burden
-- Duplicating content between README and AGENTS leads to version skew
-- Missing links between parent and child documents causes navigation issues
-- Abstract templates without concrete examples confuse both humans and AI
+- **WHAT**: A dual-documentation pattern separating human-facing (README.md) and AI-facing (AGENTS.md) concerns across repository hierarchies, with clear worldview boundaries determining where documentation should exist
+- **WHY**: Humans need context/setup while AI agents need operational specifications; separation of concerns prevents information overload, enables scalability, and reduces documentation drift
+- **WHEN**: Use at repository initialization, when adding new subsystems/services, introducing AI agents to existing projects, or refactoring monorepo structures
+- **HOW**: Create root-level README.md (orientation) and AGENTS.md (agent catalog) with bidirectional links; add subdirectory versions ONLY at architectural boundaries (apps/*, packages/*, services/*); maintain parent (map) vs. child (guidebook) relationship
+- **WATCH_OUT**: Avoid over-documentation in low-level directories, duplicating content between README and AGENTS, missing navigation links, or using abstract templates without concrete examples
 
 ## Canonical Definitions
 
@@ -924,9 +907,8 @@ jobs:
 
 ## Update Log
 
-| Date | Change | Author |
-|------|--------|--------|
-| 2025-11-15 | Initial document creation based on AGENTS.md spec, README best practices, and AI-first architecture patterns | AI Assistant |
+- **2025-11-14** – Standardized Agent Contract and TL;DR sections for consistency with other SSOT documents. Updated canonical URL for renamed file. (Author: AI-First)
+- **2025-11-15** – Initial document creation based on AGENTS.md spec, README best practices, and AI-first architecture patterns. (Author: AI-First)
 
 ## See Also
 
@@ -963,7 +945,7 @@ jobs:
 
 **Document ID**: `agents-readme-guide-v1`
 
-**Canonical URL**: `https://github.com/<org>/<repo>/docs/AGENTS.md_README.md`
+**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/README_AND_AGENTS.md`
 
 **Version**: 1.0.0
 
