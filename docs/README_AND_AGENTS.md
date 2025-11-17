@@ -165,10 +165,122 @@ pnpm lint     # Check code quality
 MIT
 ```
 
+**⏺ AGENTS.md Basic Structure**
+
+After reviewing the README_AND_AGENTS.md document, the basic structure of AGENTS.md is as follows:
+
+**📄 AGENTS.md Standard Structure**
+
+**1. Primary Directive Section**
+
+```markdown
+## Primary Directive
+Repository wide behavior rules for all autonomous agents in this repository.
+```
+
+- Defines common behaviors and policies for all autonomous agents operating in this repository
+- Describes invariant conditions regarding language, interaction, safety, style, and quality
+
+**2. Scope Section**
+
+```markdown
+## Scope
+Complete inventory of autonomous agents operating across this repository.
+```
+
+- Describes the complete inventory of all autonomous agents operating in this repository
+
+**3. Agent List Section**
+
+```markdown
+## Agent List
+
+| ID | Type | Scope | Role |
+|----|------|-------|------|
+| repo-orchestrator | manager | whole repo | Coordinates cross-cutting concerns |
+| supabase-agent | specialist | database | Schema migration and query optimization |
+| frontend-builder | specialist | apps/web | UI component development |
+```
+
+- Lists agents in a concise table format
+- Clearly states ID, type, scope, and role
+
+**4. Agent Definitions Section**
+
+Detailed definition including the following elements for each agent:
+
+```markdown
+### [agent-id]
+
+- **Type**: Manager/Specialist etc.
+- **Scope**: Operational scope of the agent
+- **Mission**: Specific, measurable mission
+- **Inputs**: Concrete input specifications (environment variables, configs, requests, etc.)
+- **Outputs**: Concrete output specifications (files, metrics, deliverables, etc.)
+- **Tools**: Tools to use (including versions)
+- **Constraints**: "Must" and "must not" rules
+```
+
+**5. Agent Capability Matrix (Optional)**
+
+Recommended capability matrix when there are 5+ agents:
+
+```markdown
+## Agent Capability Matrix
+
+| Agent ID | Code Gen | Testing | Deploy | Schema | Review | Scope |
+|----------|----------|---------|--------|--------|--------|-------|
+| repo-orchestrator | ● | ● | ◐ | ○ | ● | Global |
+
+Legend:
+- ● Full capability
+- ◐ Partial/assisted capability
+- ○ No capability
+```
+
+**6. Routing Rules Section**
+
+Decision rules for which agent to assign tasks to:
+
+```markdown
+## Routing Rules
+
+**Code Generation Request** → Check scope:
+- Frontend (apps/web/*) → `frontend-builder`
+- API (apps/api/*) → `api-developer`
+- Cross-cutting → `repo-orchestrator`
+```
+
+**7. Context Section**
+
+Navigation links to other documentation:
+
+```markdown
+## Context
+For repository overview and human setup instructions, see [README.md](./README.md).
+For architectural context, see [SSOT.md](./docs/SSOT.md).
+```
+
+**🔑 Key Points**
+
+1. **Specificity**: Avoid abstract expressions, use concrete and measurable definitions
+2. **Completeness**: Include all required fields (ID, Type, Scope, Mission, Inputs, Outputs, Tools, Constraints)
+3. **Navigation**: Bidirectional links to README.md and other related documentation
+4. **Hierarchical Structure**: Subdirectory AGENTS.md only lists agents specific to that module
+
+**📍 Placement Rules**
+
+- **Root Level**: Repository-wide agent catalog
+- **Subdirectories**: Create only at worldview boundaries (apps/*, packages/*, services/*)
+- **Implementation Directories**: Do not create in src/*, lib/*, utils/*
+
 **Root AGENTS.md Template**:
 
 ```markdown
 # Agents Catalog
+
+## Primary Directive
+Repository wide behavior rules for all autonomous agents in this repository.
 
 ## Scope
 Complete inventory of autonomous agents operating across this repository.
@@ -907,6 +1019,7 @@ jobs:
 
 ## Update Log
 
+- **2025-11-17** – Updated AGENTS.md basic structure section to include Primary Directive as the first section, providing repository-wide behavior rules for all autonomous agents. Reorganized structure documentation for clarity. (Author: AI-First)
 - **2025-11-14** – Standardized Agent Contract and TL;DR sections for consistency with other SSOT documents. Updated canonical URL for renamed file. (Author: AI-First)
 - **2025-11-15** – Initial document creation based on AGENTS.md spec, README best practices, and AI-first architecture patterns. (Author: AI-First)
 
