@@ -968,7 +968,7 @@ class SkillTestRunner:
                     "status": "error",
                     "error": str(e)
                 })
-
+        
         return results
 
     def _execute_test(self, test: dict) -> bool:
@@ -1159,11 +1159,58 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 
 ---
 
+## Versioning and Deprecation
+
+Skills must evolve over time. To ensure stability for agents and orchestrators that rely on them, we enforce a strict versioning policy.
+
+### Versioning Policy
+
+Skills follow [Semantic Versioning 2.0.0](https://semver.org/). The version is declared in `skill.yaml` under `metadata.version`.
+
+- **Major (X.0.0)**: Breaking changes.
+  - Input/output schema changes that are not backward compatible (e.g., removing a required field, changing a type).
+  - Removal of tools.
+  - Significant changes in tool behavior or logic.
+- **Minor (0.X.0)**: New features in a backward-compatible manner.
+  - Adding new tools.
+  - Adding optional input fields.
+  - Adding output fields.
+- **Patch (0.0.X)**: Backward-compatible bug fixes.
+  - Internal implementation fixes.
+  - Documentation updates.
+  - Performance improvements.
+
+### Deprecation
+
+When a skill or tool is scheduled for removal, it must be explicitly deprecated before being removed in a future Major version.
+
+#### Deprecating a Skill
+Add a `deprecated` flag to `metadata` in `skill.yaml`:
+
+```yaml
+metadata:
+  id: io.aimdb.legacy-skill
+  version: 1.5.0
+  deprecated: true
+  deprecation_notice: "Use io.aimdb.new-skill instead. Removal planned for v2.0.0."
+```
+
+#### Deprecating a Tool
+Add `deprecated: true` to the tool definition (if supported by schema) or mention it in the description. Ideally, moving forward, we will standardize a `deprecated` field in the tool spec.
+
+### Adapter Compatibility
+MCP Adapters and Skill Loaders should:
+1.  **Warn** when loading a deprecated skill or tool (via logs or MCP notifications).
+2.  **Error** if a requested skill version is incompatible (e.g., major version mismatch), although currently, most loaders load the latest available version on disk.
+
+---
+
 ## Update Log
 
 - **2024-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
 - **2025-11-14** – Added Practical Skill Examples section with frontend and document processing examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering manifest structure, three-layer model, permissions, safety, progressive disclosure, and dual runtime support. (Author: AI-First)
+- **2025-11-20** - Added Versioning and Deprecation section. (Author: Repo-Agent)
 
 ---
 
