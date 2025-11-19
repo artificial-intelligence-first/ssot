@@ -4,7 +4,7 @@ slug: agent-skill
 summary: "Skill spec overview"
 type: spec
 tags: [topic, ai-first, agent, skill, specification]
-last_updated: 2025-11-14
+last_updated: 2024-11-19
 ---
 
 # Topic: Agent Skill All Model - Universal Specification
@@ -122,6 +122,106 @@ spec:
         runtime: python
 ```
 
+```python
+import json
+from abc import ABC, abstractmethod
+from typing import Any
+
+# Layer 2: Host-specific adapter (e.g., for Claude platform)
+class ClaudeSkillAdapter:
+    """Adapter that transforms vendor-neutral skill to Claude-specific format"""
+
+    def __init__(self, skill_spec: dict):
+        self.spec = skill_spec
+        self.runtime = self._detect_runtime()
+
+    def transform_to_claude_tool(self) -> dict:
+        """Convert skill.yaml tool definition to Claude tool format"""
+        tool = self.spec['spec']['tools'][0]
+        return {
+            "name": tool['name'],
+            "description": tool.get('description', ''),
+            "input_schema": self._adapt_schema(tool['input_schema']),
+            "implementation": self._create_claude_wrapper(tool)
+        }
+
+    def _adapt_schema(self, schema: dict) -> dict:
+        """Adapt JSON Schema to Claude's specific requirements"""
+        adapted = schema.copy()
+        # Claude-specific schema adjustments
+        if 'additionalProperties' not in adapted:
+            adapted['additionalProperties'] = False
+        return adapted
+
+    def _create_claude_wrapper(self, tool: dict) -> callable:
+        """Create platform-specific execution wrapper"""
+        entrypoint = tool['implementation']['entrypoint']
+        handler = tool['implementation']['handler']
+
+        def wrapper(**kwargs):
+            # Platform-specific setup (permissions, sandboxing)
+            with self._setup_claude_context():
+                # Import and execute the actual implementation
+                module = self._load_module(entrypoint)
+                func = getattr(module, handler)
+                return func(**kwargs)
+
+        return wrapper
+
+# Layer 2: Adapter for OpenAI platform
+class OpenAISkillAdapter:
+    """Adapter for OpenAI function calling"""
+
+    def transform_to_openai_function(self) -> dict:
+        """Convert to OpenAI function format"""
+        tool = self.spec['spec']['tools'][0]
+        return {
+            "type": "function",
+            "function": {
+                "name": tool['name'],
+                "description": tool.get('description'),
+                "parameters": tool['input_schema'],
+                # OpenAI-specific: strict mode for structured outputs
+                "strict": True
+            }
+        }
+
+    def create_openai_executor(self) -> callable:
+        """Create OpenAI-specific executor with their sandbox"""
+        def executor(function_call):
+            # OpenAI-specific execution context (host-provided sandbox)
+            with create_openai_sandbox() as sandbox:
+                result = sandbox.run_function(
+                    function_call.name,
+                    **json.loads(function_call.arguments),
+                )
+            return result
+        return executor
+
+class SkillAdapter(ABC):
+    """Abstract base for all platform adapters"""
+
+    @abstractmethod
+    def load_skill(self, path: str) -> dict:
+        """Load skill from directory"""
+        pass
+
+    @abstractmethod
+    def validate_permissions(self) -> bool:
+        """Check platform-specific permissions"""
+        pass
+
+    @abstractmethod
+    def transform_tools(self) -> list:
+        """Convert tools to platform format"""
+        pass
+
+    @abstractmethod
+    def setup_runtime(self) -> Any:
+        """Initialize platform-specific runtime"""
+        pass
+```
+
 **Sources**: [R1], [R3]
 
 ### Progressive Disclosure
@@ -146,7 +246,7 @@ spec:
 
 ```python
 # Host implementation of progressive disclosure
-def select_skills(user_message: str) -> list[Skill]:
+def select_skills(user_message: str) -> list["Skill"]:
     # Scan only metadata first (lightweight)
     candidates = [s for s in all_skills if matches_triggers(s, user_message)]
     # Load full instructions only for selected skills
@@ -753,17 +853,268 @@ metadata:
 - Permission checks tested (file access, network calls, subprocess spawning)
 - Error handling tested (missing files, malformed inputs, timeouts)
 
+```yaml
+# tests/cases.yaml - Test definition format
+version: 1.0
+tests:
+  - name: test_extract_text_valid_input
+    tool: extract_text
+    input:
+      path: "fixtures/sample.pdf"
+      page_from: 1
+      page_to: 2
+    expected:
+      text: contains("Sample PDF content")
+      page_count: 2
+    tags: [smoke, unit]
+
+  - name: test_extract_text_invalid_path
+    tool: extract_text
+    input:
+      path: "nonexistent.pdf"
+    expected_error:
+      type: FileNotFoundError
+      message: contains("not found")
+    tags: [unit, error-handling]
+
+  - name: test_permission_boundary
+    tool: extract_text
+    input:
+      path: "/etc/passwd"  # Outside allowed paths
+    expected_error:
+      type: PermissionError
+      message: contains("Access denied")
+    tags: [security, unit]
+```
+
 **Integration Tests**:
 - Full skill lifecycle: discovery → selection → activation → execution → result
 - Multi-skill scenarios (skill A calls skill B, shared resources)
 - Host adapter compatibility (test on 2+ execution environments)
 - Dependency installation and runtime setup
 
+```python
+# tests/runner.py - Universal test runner
+import yaml
+import json
+import subprocess
+from pathlib import Path
+from typing import Dict, Any, List
+
+class SkillTestRunner:
+    """Universal test runner for agent skills"""
+
+    def __init__(self, skill_path: str):
+        self.skill_path = Path(skill_path)
+        self.skill_spec = self._load_skill_spec()
+        self.test_cases = self._load_test_cases()
+
+    def _load_skill_spec(self) -> dict:
+        """Load and validate skill.yaml"""
+        with open(self.skill_path / "skill.yaml") as f:
+            spec = yaml.safe_load(f)
+        self._validate_spec(spec)
+        return spec
+
+    def _load_test_cases(self) -> List[dict]:
+        """Load test cases from tests/cases.yaml"""
+        test_file = self.skill_path / "tests" / "cases.yaml"
+        if not test_file.exists():
+            return []
+        with open(test_file) as f:
+            return yaml.safe_load(f).get("tests", [])
+
+    def run_smoke_tests(self) -> bool:
+        """Run only smoke tests for quick validation"""
+        smoke_tests = [t for t in self.test_cases if "smoke" in t.get("tags", [])]
+        results = []
+        for test in smoke_tests:
+            result = self._execute_test(test)
+            results.append(result)
+            print(f"✓ {test['name']}" if result else f"✗ {test['name']}")
+        return all(results)
+
+    def run_all_tests(self, verbose: bool = False) -> Dict[str, Any]:
+        """Run complete test suite with detailed reporting"""
+        results = {
+            "total": len(self.test_cases),
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "details": []
+        }
+
+        for test in self.test_cases:
+            try:
+                success = self._execute_test(test)
+                if success:
+                    results["passed"] += 1
+                else:
+                    results["failed"] += 1
+
+                results["details"].append({
+                    "name": test["name"],
+                    "status": "passed" if success else "failed",
+                    "tags": test.get("tags", [])
+                })
+
+                if verbose:
+                    self._print_test_result(test, success)
+
+            except Exception as e:
+                results["failed"] += 1
+                results["details"].append({
+                    "name": test["name"],
+                    "status": "error",
+                    "error": str(e)
+                })
+
+        return results
+
+    def _execute_test(self, test: dict) -> bool:
+        """Execute a single test case"""
+        tool_name = test["tool"]
+        tool = self._find_tool(tool_name)
+
+        if not tool:
+            raise ValueError(f"Tool '{tool_name}' not found in skill")
+
+        # Determine runtime and execute
+        runtime = tool["implementation"]["runtime"]
+        if runtime == "python":
+            return self._execute_python_test(test, tool)
+        elif runtime == "typescript":
+            return self._execute_typescript_test(test, tool)
+        else:
+            raise ValueError(f"Unsupported runtime: {runtime}")
+
+    def _execute_python_test(self, test: dict, tool: dict) -> bool:
+        """Execute Python tool with test inputs"""
+        import importlib.util
+
+        # Load the module
+        script_path = self.skill_path / tool["implementation"]["entrypoint"]
+        spec = importlib.util.spec_from_file_location("skill_module", script_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Get the handler function
+        handler_name = tool["implementation"]["handler"]
+        handler = getattr(module, handler_name)
+
+        # Execute with test inputs
+        try:
+            result = handler(**test["input"])
+            return self._validate_output(result, test.get("expected"))
+        except Exception as e:
+            if "expected_error" in test:
+                return self._validate_error(e, test["expected_error"])
+            raise
+
+    def _execute_typescript_test(self, test: dict, tool: dict) -> bool:
+        """Execute TypeScript tool with test inputs"""
+        # Use Node.js subprocess to run TypeScript
+        script_path = self.skill_path / tool["implementation"]["entrypoint"]
+        handler_name = tool["implementation"]["handler"]
+
+        # Create test runner script
+        runner_script = f"""
+        const {{ {handler_name} }} = require('./{script_path}');
+        const input = {json.dumps(test["input"])};
+        {handler_name}(input).then(result => {{
+            console.log(JSON.stringify(result));
+        }}).catch(err => {{
+            console.error(JSON.stringify({{error: err.message}}));
+            process.exit(1);
+        }});
+        """
+
+        # Execute via Node.js
+        result = subprocess.run(
+            ["node", "-e", runner_script],
+            cwd=self.skill_path,
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode == 0:
+            output = json.loads(result.stdout)
+            return self._validate_output(output, test.get("expected"))
+        else:
+            error = json.loads(result.stderr)
+            if "expected_error" in test:
+                return self._validate_error(error, test["expected_error"])
+            return False
+
+# CLI Interface
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run skill tests")
+    parser.add_argument("skill_path", help="Path to skill directory")
+    parser.add_argument("--smoke", action="store_true", help="Run only smoke tests")
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("--json", action="store_true", help="Output JSON report")
+
+    args = parser.parse_args()
+
+    runner = SkillTestRunner(args.skill_path)
+
+    if args.smoke:
+        success = runner.run_smoke_tests()
+        exit(0 if success else 1)
+    else:
+        results = runner.run_all_tests(verbose=args.verbose)
+        if args.json:
+            print(json.dumps(results, indent=2))
+        else:
+            print(f"\nTest Results: {results['passed']}/{results['total']} passed")
+        exit(0 if results['failed'] == 0 else 1)
+```
+
 **Performance Benchmarks**:
 - Skill selection latency (<100ms for metadata scan)
 - Tool execution time against realistic workloads
 - Memory footprint during execution
 - Context token usage across typical workflows
+
+```bash
+# Automated test execution via CI/CD
+# .github/workflows/skill-tests.yml
+name: Skill Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install test runner
+        run: pip install pyyaml jsonschema
+
+      - name: Run smoke tests
+        run: python tests/runner.py . --smoke
+
+      - name: Run full test suite
+        run: python tests/runner.py . --verbose --json > test-report.json
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-report.json
+```
 
 ### Success Criteria
 
@@ -780,7 +1131,7 @@ metadata:
 
 ---
 
-## 19. Practical Skill Examples
+## Practical Skill Examples
 
 ### 19.1 Frontend Development Skills
 
@@ -810,7 +1161,8 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 
 ## Update Log
 
-- **2025-11-14** – Added Section 19 (Practical Skill Examples) with frontend and document processing examples. Updated metadata. (Author: AI-First)
+- **2024-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
+- **2025-11-14** – Added Practical Skill Examples section with frontend and document processing examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering manifest structure, three-layer model, permissions, safety, progressive disclosure, and dual runtime support. (Author: AI-First)
 
 ---
@@ -845,6 +1197,6 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 
 ---
 
-**Document ID**: `ssot/AGENT_SKILL.md`
-**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/AGENT_SKILL.md`
+**Document ID**: `docs/AGENT_SKILL.md`
+**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/AGENT_SKILL.md`
 **License**: MIT

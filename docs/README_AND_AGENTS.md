@@ -4,7 +4,7 @@ slug: agents-readme
 summary: "Agents & README Guide"
 type: guide
 tags: [topic, ai-first, documentation, agents, readme, repository-structure]
-last_updated: 2025-11-15
+last_updated: 2024-11-19
 ---
 
 # AGENTS.md and README.md for AI-First Repositories
@@ -894,7 +894,7 @@ echo "README coverage: ${coverage}%"
 **Measurement**:
 ```bash
 # Parse AGENTS.md files and validate structure
-python scripts/validate_agents.py --check-required-fields
+python scripts/validate-agents.py --check-required-fields
 ```
 
 **Failure Indicators**:
@@ -991,7 +991,7 @@ jobs:
           fi
 
       - name: Validate AGENTS.md structure
-        run: python scripts/validate_agents.py --strict
+        run: python scripts/validate-agents.py --strict
 ```
 
 ### Success Criteria
@@ -1017,8 +1017,614 @@ jobs:
 - ✅ Automated changelog generation from commits
 - ✅ Documentation versioning for major releases
 
+## Practical Examples
+
+### CI/CD Automation
+
+#### Automated Validation and Generation
+
+**Intent**: Maintain documentation quality and consistency through automated CI/CD pipelines that validate structure, generate boilerplate, and ensure synchronization between README.md and AGENTS.md.
+
+**Implementation**:
+
+```yaml
+# .github/workflows/validate-docs.yml
+name: Validate Documentation
+
+on:
+  push:
+    paths:
+      - '**/*.md'
+      - '**/AGENTS.md'
+      - '**/README.md'
+  pull_request:
+    paths:
+      - '**/*.md'
+
+jobs:
+  validate-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install validation tools
+        run: |
+          npm install -g @ssot/doc-validator
+          pip install pyyaml jsonschema
+
+      - name: Validate frontmatter
+        run: |
+          find . -name "*.md" -type f | while read file; do
+            python scripts/validate-frontmatter.py "$file"
+          done
+
+      - name: Check README/AGENTS pairs
+        run: |
+          # Find all worldview boundaries
+          for dir in $(find . -type d \( -path "*/apps/*" -o -path "*/packages/*" -o -path "*/services/*" \) -maxdepth 2); do
+            if [ -f "$dir/README.md" ] && [ ! -f "$dir/AGENTS.md" ]; then
+              echo "Warning: $dir has README.md but missing AGENTS.md"
+            fi
+            if [ -f "$dir/AGENTS.md" ] && [ ! -f "$dir/README.md" ]; then
+              echo "Error: $dir has AGENTS.md but missing README.md"
+              exit 1
+            fi
+          done
+
+      - name: Validate cross-references
+        run: |
+          python scripts/validate-links.py --check-bidirectional
+
+      - name: Check agent specifications
+        run: |
+          for agents_file in $(find . -name "AGENTS.md" -type f); do
+            python scripts/validate-agents.py "$agents_file" \
+              --check-mission \
+              --check-triggers \
+              --check-tools \
+              --check-constraints
+          done
+
+  generate-documentation:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate AGENTS.md from code annotations
+        run: |
+          python scripts/generate-agents-from-code.py \
+            --source-dirs "src,lib,apps" \
+            --output-file "AGENTS.generated.md"
+
+      - name: Generate capability matrix
+        run: |
+          python scripts/generate-capability-matrix.py \
+            --input-pattern "**/AGENTS.md" \
+            --output-file "CAPABILITY_MATRIX.md"
+
+      - name: Update documentation index
+        run: |
+          python scripts/update-doc-index.py \
+            --root-readme "README.md" \
+            --discover-pattern "**/*.md"
+
+      - name: Commit generated documentation
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: auto-generate documentation [skip ci]"
+          git push
+```
+
+```python
+# scripts/validate-agents.py
+import yaml
+import json
+import sys
+import re
+from pathlib import Path
+from typing import Dict, List, Any
+
+class AgentValidator:
+    """Validates AGENTS.md files for completeness and correctness"""
+
+    def __init__(self, filepath: str):
+        self.filepath = Path(filepath)
+        self.content = self.filepath.read_text()
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
+
+    def validate_structure(self) -> bool:
+        """Check for required sections"""
+        required_sections = [
+            r'^#\s+Primary Directive',
+            r'^##\s+Agent Catalog',
+            r'^##\s+Coordination',
+        ]
+
+        for pattern in required_sections:
+            if not re.search(pattern, self.content, re.MULTILINE):
+                self.errors.append(f"Missing required section: {pattern}")
+
+        return len(self.errors) == 0
+
+    def validate_agent_specs(self) -> bool:
+        """Validate individual agent specifications"""
+        agent_pattern = r'###\s+([a-z0-9-]+)\n(.*?)(?=\n###|\n##|\Z)'
+        agents = re.findall(agent_pattern, self.content, re.DOTALL)
+
+        for agent_name, agent_content in agents:
+            # Check for required fields
+            if '**Mission**:' not in agent_content:
+                self.errors.append(f"Agent '{agent_name}' missing Mission")
+
+            if '**Triggers**:' not in agent_content and '**Command**:' not in agent_content:
+                self.warnings.append(f"Agent '{agent_name}' has no triggers or command")
+
+            if '**Tools**:' not in agent_content:
+                self.errors.append(f"Agent '{agent_name}' missing Tools specification")
+
+            # Validate tool references exist
+            tools_match = re.search(r'\*\*Tools\*\*:\s*(.+?)(?=\n\*\*|\n###|\Z)',
+                                   agent_content, re.DOTALL)
+            if tools_match:
+                tools = tools_match.group(1).strip()
+                if tools == 'None' or tools == 'N/A':
+                    self.warnings.append(f"Agent '{agent_name}' has no tools - consider if needed")
+
+        return len(self.errors) == 0
+
+    def validate_cross_references(self) -> bool:
+        """Check that links to README.md exist and are valid"""
+        readme_path = self.filepath.parent / 'README.md'
+
+        if not readme_path.exists():
+            self.errors.append(f"README.md not found at {readme_path}")
+            return False
+
+        # Check for bidirectional linking
+        readme_content = readme_path.read_text()
+        agents_filename = self.filepath.name
+
+        if agents_filename not in readme_content:
+            self.warnings.append("README.md doesn't reference this AGENTS.md file")
+
+        if 'README.md' not in self.content:
+            self.warnings.append("AGENTS.md doesn't reference README.md")
+
+        return True
+
+    def generate_report(self) -> Dict[str, Any]:
+        """Generate validation report"""
+        return {
+            'file': str(self.filepath),
+            'valid': len(self.errors) == 0,
+            'errors': self.errors,
+            'warnings': self.warnings,
+            'stats': {
+                'agent_count': len(re.findall(r'^###\s+[a-z0-9-]+',
+                                             self.content, re.MULTILINE)),
+                'has_primary_directive': bool(re.search(r'^#\s+Primary Directive',
+                                                       self.content, re.MULTILINE)),
+                'has_coordination': bool(re.search(r'^##\s+Coordination',
+                                                  self.content, re.MULTILINE))
+            }
+        }
+
+# CLI usage
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Validate AGENTS.md files')
+    parser.add_argument('filepath', help='Path to AGENTS.md file')
+    parser.add_argument('--check-mission', action='store_true')
+    parser.add_argument('--check-triggers', action='store_true')
+    parser.add_argument('--check-tools', action='store_true')
+    parser.add_argument('--check-constraints', action='store_true')
+    parser.add_argument('--json', action='store_true',
+                       help='Output as JSON')
+
+    args = parser.parse_args()
+
+    validator = AgentValidator(args.filepath)
+    validator.validate_structure()
+    validator.validate_agent_specs()
+    validator.validate_cross_references()
+
+    report = validator.generate_report()
+
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        if report['errors']:
+            print(f"❌ Errors found in {args.filepath}:")
+            for error in report['errors']:
+                print(f"  - {error}")
+            sys.exit(1)
+
+        if report['warnings']:
+            print(f"⚠️  Warnings for {args.filepath}:")
+            for warning in report['warnings']:
+                print(f"  - {warning}")
+
+        print(f"✅ {args.filepath} is valid")
+        print(f"   Found {report['stats']['agent_count']} agents")
+```
+
+```python
+# scripts/generate-agents-from-code.py
+"""
+Generates AGENTS.md documentation from code annotations
+Looks for special comments like:
+  # @agent: agent-name
+  # @mission: What this code does
+  # @tools: tool1, tool2
+"""
+
+import ast
+import re
+from pathlib import Path
+from typing import Dict, List, Set
+
+class AgentExtractor:
+    def __init__(self):
+        self.agents: Dict[str, Dict] = {}
+
+    def extract_from_file(self, filepath: Path):
+        """Extract agent annotations from Python/TypeScript files"""
+        content = filepath.read_text()
+
+        # Python annotations
+        if filepath.suffix == '.py':
+            tree = ast.parse(content)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    docstring = ast.get_docstring(node)
+                    if docstring and '@agent:' in docstring:
+                        self._parse_agent_annotation(docstring, filepath, node.name)
+
+        # TypeScript/JavaScript annotations
+        elif filepath.suffix in ['.ts', '.js', '.tsx', '.jsx']:
+            pattern = r'/\*\*[\s\S]*?@agent:\s*([a-z0-9-]+)[\s\S]*?\*/'
+            matches = re.findall(pattern, content)
+            for match in matches:
+                # Extract full comment block
+                comment_pattern = rf'/\*\*([\s\S]*?@agent:\s*{match}[\s\S]*?)\*/'
+                comment = re.search(comment_pattern, content)
+                if comment:
+                    self._parse_agent_annotation(comment.group(1), filepath, match)
+
+    def _parse_agent_annotation(self, annotation: str, filepath: Path, context: str):
+        """Parse agent metadata from annotation"""
+        agent_match = re.search(r'@agent:\s*([a-z0-9-]+)', annotation)
+        if not agent_match:
+            return
+
+        agent_name = agent_match.group(1)
+
+        if agent_name not in self.agents:
+            self.agents[agent_name] = {
+                'name': agent_name,
+                'files': set(),
+                'mission': '',
+                'tools': set(),
+                'triggers': set()
+            }
+
+        self.agents[agent_name]['files'].add(str(filepath))
+
+        # Extract other metadata
+        mission_match = re.search(r'@mission:\s*(.+?)(?=@|\n\n|\Z)', annotation, re.DOTALL)
+        if mission_match:
+            self.agents[agent_name]['mission'] = mission_match.group(1).strip()
+
+        tools_match = re.search(r'@tools:\s*(.+?)(?=@|\n\n|\Z)', annotation, re.DOTALL)
+        if tools_match:
+            tools = [t.strip() for t in tools_match.group(1).split(',')]
+            self.agents[agent_name]['tools'].update(tools)
+
+        triggers_match = re.search(r'@triggers:\s*(.+?)(?=@|\n\n|\Z)', annotation, re.DOTALL)
+        if triggers_match:
+            triggers = [t.strip() for t in triggers_match.group(1).split(',')]
+            self.agents[agent_name]['triggers'].update(triggers)
+
+    def generate_markdown(self) -> str:
+        """Generate AGENTS.md content from extracted agents"""
+        lines = [
+            "# Generated Agent Documentation",
+            "",
+            "> Auto-generated from code annotations. Do not edit manually.",
+            "",
+            "## Agent Catalog",
+            ""
+        ]
+
+        for agent_name, agent_data in sorted(self.agents.items()):
+            lines.extend([
+                f"### {agent_name}",
+                "",
+                f"**Mission**: {agent_data['mission'] or 'Not specified'}",
+                "",
+                f"**Source Files**:",
+                ""
+            ])
+
+            for filepath in sorted(agent_data['files']):
+                lines.append(f"- `{filepath}`")
+
+            lines.append("")
+
+            if agent_data['tools']:
+                lines.extend([
+                    "**Tools**:",
+                    ""
+                ])
+                for tool in sorted(agent_data['tools']):
+                    lines.append(f"- {tool}")
+                lines.append("")
+
+            if agent_data['triggers']:
+                lines.extend([
+                    "**Triggers**:",
+                    ""
+                ])
+                for trigger in sorted(agent_data['triggers']):
+                    lines.append(f"- {trigger}")
+                lines.append("")
+
+            lines.append("---")
+            lines.append("")
+
+        return '\n'.join(lines)
+
+# CLI usage
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--source-dirs', required=True,
+                       help='Comma-separated source directories')
+    parser.add_argument('--output-file', required=True,
+                       help='Output AGENTS.md file')
+
+    args = parser.parse_args()
+
+    extractor = AgentExtractor()
+
+    for source_dir in args.source_dirs.split(','):
+        source_path = Path(source_dir.strip())
+        for filepath in source_path.rglob('*'):
+            if filepath.suffix in ['.py', '.ts', '.js', '.tsx', '.jsx']:
+                try:
+                    extractor.extract_from_file(filepath)
+                except Exception as e:
+                    print(f"Warning: Failed to parse {filepath}: {e}")
+
+    output_content = extractor.generate_markdown()
+
+    output_path = Path(args.output_file)
+    output_path.write_text(output_content)
+
+    print(f"Generated {args.output_file} with {len(extractor.agents)} agents")
+```
+
+### Migration Guide
+
+### Migrating Existing Projects to README/AGENTS Structure
+
+**Intent**: Provide step-by-step process for introducing this documentation pattern to existing repositories without disrupting development.
+
+**Phase 1: Assessment (Day 1)**
+
+```bash
+# 1. Analyze current structure
+find . -name "README*" -o -name "CONTRIBUTING*" -o -name "docs" -type d | head -20
+
+# 2. Identify worldview boundaries
+find . -type d \( -name "apps" -o -name "packages" -o -name "services" -o -name "libs" \) | head -10
+
+# 3. Check for existing agent/AI documentation
+grep -r "agent\|AI\|LLM" --include="*.md" . | head -20
+```
+
+**Phase 2: Root Documentation (Day 2-3)**
+
+```markdown
+# Step 1: Create root README.md
+1. Consolidate existing README content
+2. Add clear sections: Setup, Architecture, Documentation
+3. Add navigation to future AGENTS.md
+
+# Step 2: Create root AGENTS.md
+1. Start with Primary Directive (if agents exist)
+2. Add placeholder Agent Catalog
+3. Link back to README.md
+```
+
+**Phase 3: Subsystem Documentation (Week 1-2)**
+
+```bash
+#!/bin/bash
+# Automated subsystem documentation scaffolding
+
+for boundary in apps/* packages/* services/*; do
+  if [ -d "$boundary" ]; then
+    # Create README if missing
+    if [ ! -f "$boundary/README.md" ]; then
+      cat > "$boundary/README.md" <<EOF
+# $(basename $boundary)
+
+> Part of $(basename $(pwd)) monorepo. See [root README](../../README.md).
+
+## Overview
+
+TODO: Add subsystem description
+
+## Setup
+
+TODO: Add setup instructions
+
+## Agents
+
+See [AGENTS.md](./AGENTS.md) for AI agent specifications.
+EOF
+    fi
+
+    # Create AGENTS.md if agents will be used
+    if [ ! -f "$boundary/AGENTS.md" ]; then
+      cat > "$boundary/AGENTS.md" <<EOF
+# $(basename $boundary) Agents
+
+> For context, see [README.md](./README.md)
+> For repository-wide agents, see [root AGENTS.md](../../AGENTS.md)
+
+## Agent Catalog
+
+*No agents defined yet.*
+EOF
+    fi
+  fi
+done
+```
+
+**Phase 4: Content Migration (Week 2-3)**
+
+```python
+# scripts/migrate-docs.py
+"""Migrate existing documentation to new structure"""
+
+import re
+from pathlib import Path
+import shutil
+
+class DocumentationMigrator:
+    def __init__(self, repo_root: Path):
+        self.repo_root = repo_root
+
+    def migrate_docs_folder(self):
+        """Move docs/ content to appropriate README/AGENTS locations"""
+        docs_path = self.repo_root / 'docs'
+
+        if not docs_path.exists():
+            return
+
+        for doc_file in docs_path.glob('**/*.md'):
+            content = doc_file.read_text()
+
+            # Determine destination based on content
+            if 'agent' in content.lower() or 'ai' in content.lower():
+                # Move to AGENTS.md structure
+                self._merge_into_agents(doc_file)
+            elif 'setup' in content.lower() or 'install' in content.lower():
+                # Move to README.md structure
+                self._merge_into_readme(doc_file)
+            else:
+                # Archive for manual review
+                self._archive_doc(doc_file)
+
+    def _merge_into_agents(self, doc_file: Path):
+        """Merge content into appropriate AGENTS.md"""
+        # Implementation: Parse content and append to relevant AGENTS.md
+        pass
+
+    def _merge_into_readme(self, doc_file: Path):
+        """Merge content into appropriate README.md"""
+        # Implementation: Parse content and append to relevant README.md
+        pass
+
+    def validate_migration(self):
+        """Ensure all documentation is accessible"""
+        issues = []
+
+        # Check for orphaned docs
+        old_docs = list(self.repo_root.glob('docs/**/*.md'))
+        if old_docs:
+            issues.append(f"Unmigrated docs remain: {len(old_docs)} files")
+
+        # Verify cross-references
+        for md_file in self.repo_root.glob('**/*.md'):
+            content = md_file.read_text()
+            # Check for broken links to docs/
+            if 'docs/' in content:
+                issues.append(f"Outdated docs/ reference in {md_file}")
+
+        return issues
+```
+
+**Phase 5: Validation and Cleanup (Week 3-4)**
+
+```yaml
+# .github/workflows/migration-validation.yml
+name: Validate Documentation Migration
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'  # Daily during migration
+
+jobs:
+  validate-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check documentation structure
+        run: |
+          # Ensure no docs/ folder at root (migrated)
+          if [ -d "docs" ]; then
+            echo "Warning: docs/ folder still exists"
+          fi
+
+          # Ensure worldview boundaries have documentation
+          for boundary in apps/* packages/* services/*; do
+            if [ -d "$boundary" ]; then
+              if [ ! -f "$boundary/README.md" ]; then
+                echo "Error: $boundary missing README.md"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Validate cross-references
+        run: python scripts/validate-links.py --fix-paths
+
+      - name: Generate migration report
+        run: |
+          python scripts/migration-report.py \
+            --before "docs/" \
+            --after "README.md,AGENTS.md" \
+            --output "migration-status.md"
+```
+
+**Migration Checklist**:
+
+- [ ] Root README.md created with navigation
+- [ ] Root AGENTS.md created (if using agents)
+- [ ] All worldview boundaries identified
+- [ ] README.md exists at each boundary
+- [ ] AGENTS.md exists where agents are used
+- [ ] Old docs/ content migrated or archived
+- [ ] Cross-references updated
+- [ ] CI/CD validation in place
+- [ ] Team trained on new structure
+- [ ] Documentation for documentation (meta) updated
+
+**Common Migration Pitfalls**:
+
+1. **Rushing the migration**: Take time to properly categorize content
+2. **Over-creating AGENTS.md**: Only create where agents actually exist
+3. **Losing information**: Archive everything, delete nothing initially
+4. **Breaking links**: Use automated tools to find and fix references
+5. **Ignoring team habits**: Provide clear examples and templates
+
 ## Update Log
 
+- **2024-11-19** – Added comprehensive CI/CD Automation section with validation workflows, automated agent extraction from code, and validation scripts. Added Migration Guide with phased approach for converting existing projects to README/AGENTS structure. (Author: AI-First)
 - **2025-11-17** – Updated AGENTS.md basic structure section to include Primary Directive as the first section, providing repository-wide behavior rules for all autonomous agents. Reorganized structure documentation for clarity. (Author: AI-First)
 - **2025-11-14** – Standardized Agent Contract and TL;DR sections for consistency with other SSOT documents. Updated canonical URL for renamed file. (Author: AI-First)
 - **2025-11-15** – Initial document creation based on AGENTS.md spec, README best practices, and AI-first architecture patterns. (Author: AI-First)
@@ -1054,7 +1660,7 @@ jobs:
 
 [R5] Markdown Guide. (2025). *GitHub Flavored Markdown Specification*. https://github.github.com/gfm/
 
-## Document ID
+---
 
 **Document ID**: `agents-readme-guide-v1`
 

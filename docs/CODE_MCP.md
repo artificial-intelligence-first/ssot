@@ -4,7 +4,7 @@ slug: code-mcp
 summary: "Code MCP guide"
 type: reference
 tags: [topic, ai-first, agent, mcp, code, optimization]
-last_updated: 2025-11-14
+last_updated: 2024-11-19
 ---
 
 # Topic: Code MCP — Model-Agnostic Code Execution MCP Implementation Guide
@@ -360,6 +360,284 @@ async function executeSandboxed(
 - ⚠️ **Disadvantages**: Latency overhead (~100-500ms), complexity, infrastructure requirements
 - 💡 **Alternatives**: Unrestricted execution (unsafe), VM-based (heavier), WASM (limited capabilities)
 
+**Concrete Implementation Examples**:
+
+```dockerfile
+# Dockerfile for Python sandbox environment
+FROM python:3.11-slim
+
+# Create non-root user for execution
+RUN useradd -m -s /bin/bash sandbox && \
+    mkdir -p /workspace /tmp/sandbox
+
+# Install security tools
+RUN apt-get update && apt-get install -y \
+    libseccomp2 \
+    libcap2-bin \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy MCP tools wrapper
+COPY --chown=sandbox:sandbox mcp_wrapper.py /app/mcp_wrapper.py
+COPY --chown=sandbox:sandbox requirements.txt /app/requirements.txt
+
+# Install Python dependencies in virtual environment
+USER sandbox
+WORKDIR /app
+RUN python -m venv /home/sandbox/venv && \
+    /home/sandbox/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Set up security constraints
+USER root
+RUN setcap -r /usr/local/bin/python3.11 2>/dev/null || true
+
+# Switch to sandbox user
+USER sandbox
+ENV PATH="/home/sandbox/venv/bin:$PATH"
+
+# Entry point with security flags
+ENTRYPOINT ["python", "-u", "-B", "/app/mcp_wrapper.py"]
+```
+
+```python
+# mcp_wrapper.py - Secure execution wrapper
+import os
+import sys
+import json
+import resource
+import signal
+from typing import Dict, Any
+from contextlib import contextmanager
+
+class SecureSandbox:
+    """Secure execution environment for MCP code"""
+
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self._setup_resource_limits()
+        self._setup_signal_handlers()
+
+    def _setup_resource_limits(self):
+        """Apply resource constraints"""
+        # CPU time limit (seconds)
+        resource.setrlimit(resource.RLIMIT_CPU,
+            (self.config.get('cpu_seconds', 30),
+             self.config.get('cpu_seconds', 30)))
+
+        # Memory limit (bytes)
+        memory_mb = self.config.get('memory_mb', 512)
+        resource.setrlimit(resource.RLIMIT_AS,
+            (memory_mb * 1024 * 1024, memory_mb * 1024 * 1024))
+
+        # File descriptor limit
+        resource.setrlimit(resource.RLIMIT_NOFILE,
+            (self.config.get('max_fds', 100),
+             self.config.get('max_fds', 100)))
+
+        # Process limit (prevent fork bombs)
+        resource.setrlimit(resource.RLIMIT_NPROC,
+            (self.config.get('max_processes', 1),
+             self.config.get('max_processes', 1)))
+
+    def _setup_signal_handlers(self):
+        """Setup timeout handler"""
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Execution timeout exceeded")
+
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(self.config.get('timeout_seconds', 60))
+
+    @contextmanager
+    def restricted_imports(self):
+        """Restrict dangerous imports"""
+        original_import = __builtins__.__import__
+
+        def safe_import(name, *args, **kwargs):
+            blocked = ['subprocess', 'os.system', 'eval', 'exec',
+                      'compile', '__import__', 'open']
+            if any(b in str(name) for b in blocked):
+                raise ImportError(f"Import of '{name}' is not allowed")
+            return original_import(name, *args, **kwargs)
+
+        __builtins__.__import__ = safe_import
+        try:
+            yield
+        finally:
+            __builtins__.__import__ = original_import
+
+    def execute(self, code: str) -> Dict[str, Any]:
+        """Execute code with all security constraints"""
+        with self.restricted_imports():
+            # Create restricted namespace
+            namespace = {
+                '__builtins__': {
+                    'print': print,
+                    'len': len,
+                    'range': range,
+                    'str': str,
+                    'int': int,
+                    'float': float,
+                    'dict': dict,
+                    'list': list,
+                    'tuple': tuple,
+                    'set': set,
+                    'bool': bool,
+                    'type': type,
+                    'isinstance': isinstance,
+                    'hasattr': hasattr,
+                    'getattr': getattr,
+                    'setattr': setattr,
+                    'min': min,
+                    'max': max,
+                    'sum': sum,
+                    'sorted': sorted,
+                    'enumerate': enumerate,
+                    'zip': zip,
+                    'map': map,
+                    'filter': filter,
+                    # Explicitly exclude dangerous functions
+                    # 'eval': None, 'exec': None, 'open': None
+                },
+                'mcp_tools': self._get_safe_mcp_tools()
+            }
+
+            # Execute with timeout
+            exec(code, namespace)
+
+            # Extract results
+            return {
+                'success': True,
+                'output': namespace.get('result', None),
+                'metrics': self._get_execution_metrics()
+            }
+
+    def _get_safe_mcp_tools(self):
+        """Return sandboxed MCP tool wrappers"""
+        # Import actual MCP tools with safety wrappers
+        from mcp_safe_wrappers import (
+            safe_read_file,
+            safe_write_file,
+            safe_list_files,
+            safe_search_files
+        )
+
+        return {
+            'read_file': safe_read_file,
+            'write_file': safe_write_file,
+            'list_files': safe_list_files,
+            'search_files': safe_search_files
+        }
+
+# Docker Compose configuration for orchestration
+```
+
+```yaml
+# docker-compose.yml - Multi-sandbox orchestration
+version: '3.8'
+
+services:
+  sandbox-python:
+    build:
+      context: ./sandboxes/python
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:seccomp-profile.json
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE  # For file operations within allowed paths
+    mem_limit: 512m
+    cpus: "0.5"
+    networks:
+      - sandbox-net
+    volumes:
+      - ./workspace:/workspace:ro
+      - ./outputs:/outputs:rw
+
+  sandbox-nodejs:
+    build:
+      context: ./sandboxes/nodejs
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:seccomp-profile.json
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    cpus: "0.5"
+    networks:
+      - sandbox-net
+    volumes:
+      - ./workspace:/workspace:ro
+      - ./outputs:/outputs:rw
+
+  sandbox-manager:
+    build:
+      context: ./manager
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - MAX_CONCURRENT_SANDBOXES=10
+      - DEFAULT_TIMEOUT_SECONDS=60
+    networks:
+      - sandbox-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./audit-logs:/logs:rw
+
+networks:
+  sandbox-net:
+    driver: bridge
+    internal: true  # No external network access by default
+```
+
+```json
+// seccomp-profile.json - Syscall filtering
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": ["SCMP_ARCH_X86_64"],
+  "syscalls": [
+    {
+      "names": [
+        "read", "write", "open", "close", "stat", "fstat",
+        "lstat", "poll", "lseek", "mmap", "mprotect",
+        "munmap", "brk", "rt_sigaction", "rt_sigprocmask",
+        "ioctl", "pread64", "pwrite64", "readv", "writev",
+        "access", "pipe", "select", "sched_yield", "mremap",
+        "msync", "mincore", "madvise", "shmget", "shmat",
+        "shmctl", "dup", "dup2", "pause", "nanosleep",
+        "getitimer", "alarm", "setitimer", "getpid",
+        "sendfile", "socket", "connect", "accept"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "names": ["execve", "execveat"],
+      "action": "SCMP_ACT_ERRNO"
+    },
+    {
+      "names": ["fork", "vfork", "clone"],
+      "action": "SCMP_ACT_ERRNO"
+    },
+    {
+      "names": ["ptrace"],
+      "action": "SCMP_ACT_ERRNO"
+    }
+  ]
+}
+```
+
 **Sources**: [R1]
 
 ---
@@ -591,6 +869,270 @@ for tool in mcp_server.list_tools():
 - ✅ **Advantages**: Consistency, reduced manual work, automatic updates, fewer errors
 - ⚠️ **Disadvantages**: Requires schema availability, generated code may need customization
 - 💡 **Alternatives**: Manual implementation (error-prone), dynamic proxies (no type safety)
+
+**TypeScript Implementation**:
+
+```typescript
+// codegen/generate-ts-wrappers.ts
+import * as fs from 'fs';
+import * as path from 'path';
+import { JSONSchema7 } from 'json-schema';
+
+interface ToolSchema {
+  id: string;
+  name: string;
+  description: string;
+  parameters: JSONSchema7;
+  returns: JSONSchema7;
+}
+
+class TypeScriptWrapperGenerator {
+  private readonly outputDir: string;
+
+  constructor(outputDir: string) {
+    this.outputDir = outputDir;
+  }
+
+  generateWrapper(schema: ToolSchema): string {
+    const inputInterface = this.generateInterface(
+      `${this.toPascalCase(schema.name)}Input`,
+      schema.parameters
+    );
+
+    const outputInterface = this.generateInterface(
+      `${this.toPascalCase(schema.name)}Output`,
+      schema.returns
+    );
+
+    const functionName = this.toCamelCase(schema.name);
+
+    return `
+// Auto-generated from MCP schema - DO NOT EDIT MANUALLY
+import { MCPClient } from '../client/mcp-client';
+
+${inputInterface}
+
+${outputInterface}
+
+/**
+ * ${schema.description}
+ * @param input The input parameters for ${schema.name}
+ * @returns Promise resolving to the tool output
+ */
+export async function ${functionName}(
+  input: ${this.toPascalCase(schema.name)}Input
+): Promise<${this.toPascalCase(schema.name)}Output> {
+  return await MCPClient.callTool<
+    ${this.toPascalCase(schema.name)}Input,
+    ${this.toPascalCase(schema.name)}Output
+  >('${schema.id}', input);
+}
+
+// Type guard for runtime validation
+export function is${this.toPascalCase(schema.name)}Output(
+  value: unknown
+): value is ${this.toPascalCase(schema.name)}Output {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    ${this.generateTypeGuard(schema.returns)}
+  );
+}
+`.trim();
+  }
+
+  private generateInterface(name: string, schema: JSONSchema7): string {
+    const properties = schema.properties || {};
+    const required = new Set(schema.required || []);
+
+    const fields = Object.entries(properties).map(([key, prop]) => {
+      const optional = !required.has(key) ? '?' : '';
+      const type = this.jsonSchemaToTypeScript(prop as JSONSchema7);
+      const description = (prop as any).description;
+
+      let field = `  ${key}${optional}: ${type};`;
+      if (description) {
+        field = `  /** ${description} */\n${field}`;
+      }
+      return field;
+    }).join('\n');
+
+    return `export interface ${name} {\n${fields}\n}`;
+  }
+
+  private jsonSchemaToTypeScript(schema: JSONSchema7): string {
+    switch (schema.type) {
+      case 'string':
+        if (schema.enum) {
+          return schema.enum.map(v => `'${v}'`).join(' | ');
+        }
+        return 'string';
+      case 'number':
+      case 'integer':
+        return 'number';
+      case 'boolean':
+        return 'boolean';
+      case 'array':
+        if (schema.items) {
+          const itemType = this.jsonSchemaToTypeScript(
+            schema.items as JSONSchema7
+          );
+          return `${itemType}[]`;
+        }
+        return 'any[]';
+      case 'object':
+        if (schema.properties) {
+          const props = Object.entries(schema.properties)
+            .map(([k, v]) => `${k}: ${this.jsonSchemaToTypeScript(v as JSONSchema7)}`)
+            .join('; ');
+          return `{ ${props} }`;
+        }
+        if (schema.additionalProperties) {
+          const valueType = typeof schema.additionalProperties === 'object'
+            ? this.jsonSchemaToTypeScript(schema.additionalProperties)
+            : 'any';
+          return `Record<string, ${valueType}>`;
+        }
+        return 'object';
+      case 'null':
+        return 'null';
+      default:
+        // Handle union types
+        if (Array.isArray(schema.type)) {
+          return schema.type.map(t =>
+            this.jsonSchemaToTypeScript({ ...schema, type: t })
+          ).join(' | ');
+        }
+        return 'any';
+    }
+  }
+
+  private generateTypeGuard(schema: JSONSchema7): string {
+    const properties = schema.properties || {};
+    const required = schema.required || [];
+
+    const checks = required.map(prop =>
+      `'${prop}' in value`
+    );
+
+    Object.entries(properties).forEach(([key, prop]) => {
+      const propSchema = prop as JSONSchema7;
+      if (propSchema.type === 'string') {
+        checks.push(`typeof (value as any).${key} === 'string'`);
+      } else if (propSchema.type === 'number') {
+        checks.push(`typeof (value as any).${key} === 'number'`);
+      } else if (propSchema.type === 'boolean') {
+        checks.push(`typeof (value as any).${key} === 'boolean'`);
+      }
+    });
+
+    return checks.join(' &&\n    ');
+  }
+
+  async generateAllWrappers(schemas: ToolSchema[]): Promise<void> {
+    // Ensure output directory exists
+    await fs.promises.mkdir(this.outputDir, { recursive: true });
+
+    // Generate index file
+    const indexContent: string[] = [
+      '// Auto-generated barrel export - DO NOT EDIT MANUALLY',
+      ''
+    ];
+
+    for (const schema of schemas) {
+      // Generate wrapper for each tool
+      const wrapperCode = this.generateWrapper(schema);
+      const fileName = `${this.toKebabCase(schema.name)}.ts`;
+      const filePath = path.join(this.outputDir, fileName);
+
+      await fs.promises.writeFile(filePath, wrapperCode, 'utf-8');
+      console.log(`Generated: ${filePath}`);
+
+      // Add to index exports
+      const functionName = this.toCamelCase(schema.name);
+      indexContent.push(
+        `export { ${functionName}, ` +
+        `${this.toPascalCase(schema.name)}Input, ` +
+        `${this.toPascalCase(schema.name)}Output, ` +
+        `is${this.toPascalCase(schema.name)}Output } from './${fileName.replace('.ts', '')}';`
+      );
+    }
+
+    // Write index file
+    const indexPath = path.join(this.outputDir, 'index.ts');
+    await fs.promises.writeFile(
+      indexPath,
+      indexContent.join('\n'),
+      'utf-8'
+    );
+    console.log(`Generated index: ${indexPath}`);
+  }
+
+  // Utility methods for case conversion
+  private toPascalCase(str: string): string {
+    return str
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+  }
+
+  private toCamelCase(str: string): string {
+    const pascal = this.toPascalCase(str);
+    return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+  }
+
+  private toKebabCase(str: string): string {
+    return str.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
+  }
+}
+
+// CLI usage
+async function main() {
+  const generator = new TypeScriptWrapperGenerator('./generated/mcp-wrappers');
+
+  // Load schemas from MCP server
+  const schemas = await loadSchemasFromMCPServer();
+
+  // Generate all wrappers
+  await generator.generateAllWrappers(schemas);
+
+  // Run TypeScript compiler to verify generated code
+  const { exec } = require('child_process');
+  exec('npx tsc --noEmit ./generated/mcp-wrappers/*.ts', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Type checking failed:', stderr);
+      process.exit(1);
+    }
+    console.log('All wrappers generated and type-checked successfully!');
+  });
+}
+
+if (require.main === module) {
+  main().catch(console.error);
+}
+```
+
+```json
+// tsconfig.json for generated code
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./generated"
+  },
+  "include": ["generated/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
 
 **Sources**: [R1]
 
@@ -924,7 +1466,7 @@ async function callMCPTool(tool: string, input: any, opts?: CallOptions) {
 
 ---
 
-## 16. Practical Examples
+## Practical Examples
 
 ### 16.1 Document Processing Workflow
 
@@ -983,7 +1525,8 @@ await analytics.save_report({
 
 ## Update Log
 
-- **2025-11-14** – Added Section 16 (Practical Examples) with document processing and data analysis pipeline examples. Updated metadata. (Author: AI-First)
+- **2024-11-19** – Enhanced Sandbox-Based Execution pattern with complete Docker implementation, security profiles, and Python wrapper. Added TypeScript stub generation implementation with full type mapping and CLI tooling. (Author: AI-First)
+- **2025-11-14** – Added Practical Examples section with document processing and data analysis pipeline examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering Code MCP architecture, implementation patterns, progressive disclosure, sandbox execution, security practices, and cost optimization strategies. (Author: AI-First)
 
 ---
@@ -1018,6 +1561,6 @@ await analytics.save_report({
 
 ---
 
-**Document ID**: `ssot/CODE_MCP.md`
-**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/CODE_MCP.md`
+**Document ID**: `docs/CODE_MCP.md`
+**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/CODE_MCP.md`
 **License**: MIT

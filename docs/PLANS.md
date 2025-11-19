@@ -4,7 +4,7 @@ slug: exec-plan
 summary: "AI-driven task management"
 type: spec
 tags: [topic, ai-first, agent, planning, execution, all-model]
-last_updated: 2025-11-16
+last_updated: 2024-11-19
 ---
 
 # Topic: ExecPlan and PLANS.md — Model-Agnostic Execution Planning for AI-Driven Development
@@ -258,6 +258,207 @@ Scope: Set up Socket.io for real-time connections
 
 **Sources**: [R1]
 
+### Pattern: Multi-Agent Coordination
+
+**Intent**: Enable multiple AI agents to collaborate on a single plan while maintaining coherence and avoiding conflicting edits.
+
+**Context**: Complex projects requiring specialized agents (frontend, backend, database, testing) working in parallel or sequence.
+
+**Implementation**:
+
+```markdown
+## Agent Coordination Protocol
+
+### Agent Roles and Responsibilities
+- **Lead Agent**: Maintains PLANS.md, coordinates milestones
+- **Frontend Agent**: UI components, styling, user interactions
+- **Backend Agent**: API endpoints, business logic, data processing
+- **Database Agent**: Schema design, migrations, query optimization
+- **Test Agent**: Test suite development, coverage analysis
+
+### Coordination Mechanisms
+
+#### 1. Lock-Based Editing
+```yaml
+# .agent-locks.yaml
+locks:
+  - agent: frontend-agent-01
+    files:
+      - src/components/**
+      - styles/**
+    acquired: 2024-11-19T10:30:00Z
+    expires: 2024-11-19T11:30:00Z
+  - agent: backend-agent-02
+    files:
+      - api/**
+      - models/**
+    acquired: 2024-11-19T10:35:00Z
+    expires: 2024-11-19T11:35:00Z
+```
+
+#### 2. Message Passing
+```markdown
+## Inter-Agent Messages
+
+### [2024-11-19 10:45] Frontend → Backend
+Need new endpoint: GET /api/notifications/unread-count
+Expected response: { count: number, lastChecked: string }
+
+### [2024-11-19 10:50] Backend → Frontend
+Endpoint ready at: GET /api/notifications/unread-count
+Added WebSocket event: 'notification:count-updated'
+```
+
+#### 3. Conflict Resolution
+```markdown
+## Conflict Log
+
+### [2024-11-19 11:00] Merge Conflict in models/User.ts
+- Frontend Agent: Added displayName field
+- Backend Agent: Added lastLoginAt field
+- Resolution: Both changes accepted, no overlap
+- Resolved by: Lead Agent
+```
+
+### Synchronization Points
+
+```markdown
+## Synchronization Schedule
+
+### Daily Sync (every 24h)
+- All agents commit work-in-progress
+- Lead agent reviews Progress section
+- Conflicts identified and resolved
+- Next day's work assigned
+
+### Milestone Sync (per milestone)
+- All agents complete assigned tasks
+- Integration testing performed
+- Lead agent updates Outcomes section
+- Next milestone activated
+```
+
+**Key Principles**:
+- **Clear Ownership**: Each file/directory has single owner at any time
+- **Explicit Communication**: All cross-agent dependencies documented
+- **Regular Synchronization**: Prevent divergence through scheduled syncs
+- **Conflict Prevention**: Lock system prevents simultaneous edits
+
+**Trade-offs**:
+- ✅ **Advantages**: Parallel work, specialized expertise, faster delivery
+- ⚠️ **Disadvantages**: Coordination overhead, potential for conflicts, complexity
+- 💡 **Alternatives**: Single agent for smaller tasks, sequential processing
+
+**Sources**: [R1]
+
+### Pattern: Plan Revision Workflow
+
+**Intent**: Systematically handle situations where the original plan proves incorrect or impossible, maintaining traceability of changes.
+
+**Context**: When Surprises & Discoveries reveal fundamental flaws in assumptions, technical blockers, or better approaches.
+
+**Implementation**:
+
+```markdown
+## Plan Revision Protocol
+
+### Revision Triggers
+1. **Technical Blocker**: Assumed API/library doesn't support required feature
+2. **Performance Issue**: Approach won't scale to requirements
+3. **Security Concern**: Implementation creates vulnerability
+4. **Better Alternative**: Discovery of superior approach mid-implementation
+
+### Revision Process
+
+#### Step 1: Document the Issue
+```markdown
+## Surprises & Discoveries
+
+### [2024-11-19 14:30] REVISION NEEDED: Database Approach Won't Scale
+- **Originally Planned**: Store notifications in PostgreSQL with polling
+- **Issue Discovered**: Polling every second for 10K users = 10K queries/sec
+- **Evidence**: Load test showed 98% CPU at 1K users
+- **Impact**: Complete redesign of notification system required
+```
+
+#### Step 2: Propose Revision
+```markdown
+## Decision Log
+
+### [2024-11-19 14:45] REVISION PROPOSAL: Switch to Event Streaming
+**Current Approach**: PostgreSQL + polling
+**Proposed Approach**: Redis Streams + Server-Sent Events
+**Rationale**:
+- Redis handles 100K msgs/sec with 5% CPU
+- SSE eliminates polling overhead
+- Simpler than WebSocket for one-way flow
+**Risks**:
+- Team less familiar with Redis Streams
+- SSE has browser connection limits
+**Decision**: APPROVED - Proceed with revision
+```
+
+#### Step 3: Update Plan
+```markdown
+## Plan Revision History
+
+### Revision 1: Notification System Architecture
+**Date**: 2024-11-19 15:00
+**Sections Modified**:
+- Milestone 2: Changed from "PostgreSQL Queue" to "Redis Streams"
+- Milestone 3: Changed from "Polling API" to "SSE Endpoint"
+- Added Milestone 4: "Redis Stream Consumer Service"
+
+**Original Milestone 2** (Preserved for reference):
+<details>
+<summary>View original plan</summary>
+
+## Milestone 2: PostgreSQL Queue Implementation
+- Create notifications table with queue columns
+- Implement polling endpoint
+- Add database indexes for performance
+
+</details>
+
+**Revised Milestone 2**:
+## Milestone 2: Redis Streams Setup
+- Configure Redis with persistence
+- Create notification stream schema
+- Implement publisher service
+```
+
+#### Step 4: Adjust Timeline
+```markdown
+## Progress
+
+### Timeline Impact Assessment
+- Original completion: 2024-11-22
+- Revision overhead: +2 days (learning + implementation)
+- New completion: 2024-11-24
+- Mitigation: Parallelize Milestone 4 with Milestone 5
+```
+
+### Revision Guidelines
+
+1. **Preserve History**: Never delete original plans, use collapsible sections
+2. **Justify Changes**: Every revision needs evidence and rationale
+3. **Assess Impact**: Document effect on timeline, resources, other milestones
+4. **Learn Forward**: Add discoveries to "Lessons Learned" for future plans
+5. **Communicate**: If multi-agent, broadcast revision to all affected agents
+
+**Key Principles**:
+- **Traceability**: Full history of what changed and why
+- **Evidence-Based**: Revisions backed by concrete findings
+- **Minimal Disruption**: Change only what's necessary
+- **Learning Integration**: Each revision improves future planning
+
+**Trade-offs**:
+- ✅ **Advantages**: Adaptability, learning capture, audit trail
+- ⚠️ **Disadvantages**: Document grows large, revision overhead
+- 💡 **Alternatives**: Start new plan (loses context), ignore issues (technical debt)
+
+**Sources**: [R1]
+
 ---
 
 ## Decision Checklist
@@ -413,8 +614,31 @@ Code example:
 
 ---
 
+## Practical Examples
+
+### Example: Single-Agent ExecPlan
+
+This document's OAuth2 authentication example in the Canonical Definitions section shows a minimal but complete ExecPlan that a single agent can execute end-to-end (purpose, progress, surprises, decisions). Use this pattern for features that fit within one agent's skill set and one codebase.
+
+### Example: Multi-Agent ExecPlan
+
+The Multi-Agent Coordination pattern demonstrates how to structure PLANS.md when multiple specialized agents (frontend, backend, database, testing) collaborate. Treat the Lead Agent as the sole maintainer of PLANS.md while specialists update only their dedicated sections (Progress, Surprises, Decision Log) via clearly labeled messages.
+
+### Example: Plan Revision in Practice
+
+The Plan Revision Workflow pattern illustrates how to document a major architectural pivot (PostgreSQL polling → Redis Streams + SSE). When applying this pattern, always:
+- Capture the surprise with evidence
+- Record the revision decision and risks
+- Preserve the original milestone in a collapsible block
+- Add revised milestones with explicit scope and verification commands
+
+These examples are intended as copy-pastable starting points that novice users and AI agents can adapt with minimal changes.
+
+---
+
 ## Update Log
 
+- **2024-11-19** – Added Multi-Agent Coordination pattern with lock-based editing, message passing, and synchronization mechanisms. Added Plan Revision Workflow pattern with systematic change management and traceability guidelines. (Author: AI-First)
 - **2025-11-16** – Initial document creation based on OpenAI Cookbook specification (Author: Claude)
 
 ---
