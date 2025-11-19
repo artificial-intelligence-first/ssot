@@ -1,7 +1,7 @@
 ---
 title: Topic Name
 slug: topic-name
-summary: "Short doc label"
+summary: "Short doc label (<50 chars)."
 type: spec
 tags: [topic, ai-first, tag1, tag2]
 last_updated: YYYY-MM-DD

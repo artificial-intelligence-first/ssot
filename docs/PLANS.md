@@ -228,17 +228,14 @@ Deliverables:
 - Test file: tests/models/Notification.test.ts
 
 Commands to verify:
-```bash
+bash
 npm run migrate:up
 npm test models/Notification.test.ts
-```
 
 Expected output:
-```
 ✓ Migration 001_create_notifications.sql applied
 ✓ Notification model creates records
 ✓ Notification model validates required fields
-```
 
 ## Milestone 2: WebSocket Infrastructure
 Scope: Set up Socket.io for real-time connections
@@ -279,7 +276,7 @@ Scope: Set up Socket.io for real-time connections
 ### Coordination Mechanisms
 
 #### 1. Lock-Based Editing
-```yaml
+yaml
 # .agent-locks.yaml
 locks:
   - agent: frontend-agent-01
@@ -294,10 +291,9 @@ locks:
       - models/**
     acquired: 2024-11-19T10:35:00Z
     expires: 2024-11-19T11:35:00Z
-```
 
 #### 2. Message Passing
-```markdown
+markdown
 ## Inter-Agent Messages
 
 ### [2024-11-19 10:45] Frontend → Backend
@@ -307,10 +303,9 @@ Expected response: { count: number, lastChecked: string }
 ### [2024-11-19 10:50] Backend → Frontend
 Endpoint ready at: GET /api/notifications/unread-count
 Added WebSocket event: 'notification:count-updated'
-```
 
 #### 3. Conflict Resolution
-```markdown
+markdown
 ## Conflict Log
 
 ### [2024-11-19 11:00] Merge Conflict in models/User.ts
@@ -318,11 +313,10 @@ Added WebSocket event: 'notification:count-updated'
 - Backend Agent: Added lastLoginAt field
 - Resolution: Both changes accepted, no overlap
 - Resolved by: Lead Agent
-```
 
 ### Synchronization Points
 
-```markdown
+markdown
 ## Synchronization Schedule
 
 ### Daily Sync (every 24h)
@@ -371,7 +365,7 @@ Added WebSocket event: 'notification:count-updated'
 ### Revision Process
 
 #### Step 1: Document the Issue
-```markdown
+markdown
 ## Surprises & Discoveries
 
 ### [2024-11-19 14:30] REVISION NEEDED: Database Approach Won't Scale
@@ -379,10 +373,9 @@ Added WebSocket event: 'notification:count-updated'
 - **Issue Discovered**: Polling every second for 10K users = 10K queries/sec
 - **Evidence**: Load test showed 98% CPU at 1K users
 - **Impact**: Complete redesign of notification system required
-```
 
 #### Step 2: Propose Revision
-```markdown
+markdown
 ## Decision Log
 
 ### [2024-11-19 14:45] REVISION PROPOSAL: Switch to Event Streaming
@@ -396,10 +389,9 @@ Added WebSocket event: 'notification:count-updated'
 - Team less familiar with Redis Streams
 - SSE has browser connection limits
 **Decision**: APPROVED - Proceed with revision
-```
 
 #### Step 3: Update Plan
-```markdown
+markdown
 ## Plan Revision History
 
 ### Revision 1: Notification System Architecture
@@ -425,10 +417,9 @@ Added WebSocket event: 'notification:count-updated'
 - Configure Redis with persistence
 - Create notification stream schema
 - Implement publisher service
-```
 
 #### Step 4: Adjust Timeline
-```markdown
+markdown
 ## Progress
 
 ### Timeline Impact Assessment
@@ -436,7 +427,6 @@ Added WebSocket event: 'notification:count-updated'
 - Revision overhead: +2 days (learning + implementation)
 - New completion: 2024-11-24
 - Mitigation: Parallelize Milestone 4 with Milestone 5
-```
 
 ### Revision Guidelines
 
@@ -445,6 +435,7 @@ Added WebSocket event: 'notification:count-updated'
 3. **Assess Impact**: Document effect on timeline, resources, other milestones
 4. **Learn Forward**: Add discoveries to "Lessons Learned" for future plans
 5. **Communicate**: If multi-agent, broadcast revision to all affected agents
+```
 
 **Key Principles**:
 - **Traceability**: Full history of what changed and why

@@ -87,8 +87,6 @@ console.log(summary); // Only summary to model
 
 **Sources**: [R1]
 
----
-
 ### Code Wrapper (Code API)
 
 **Definition**: A thin typed function that wraps a single MCP tool, providing language-native interface (TypeScript/Python) with type annotations, docstrings, and standardized error handling.
@@ -129,8 +127,6 @@ async def get_document(input: GetDocumentInput) -> GetDocumentResponse:
 
 **Sources**: [R1]
 
----
-
 ### Progressive Disclosure
 
 **Definition**: A context optimization strategy where tool definitions are loaded on-demand rather than pre-loaded, with granular detail levels (name-only, name+description, full-schema) based on agent needs.
@@ -170,8 +166,6 @@ const code = `
 ```
 
 **Sources**: [R1], [R3]
-
----
 
 ### Sandbox Execution Layer
 
@@ -215,8 +209,6 @@ sandbox:
 ```
 
 **Sources**: [R1]
-
----
 
 ### Code Skill
 
@@ -1226,8 +1218,6 @@ Read tool definitions from files as needed.
 
 **Sources**: [R1]
 
----
-
 ### Anti-pattern: Exposing Large Datasets to Model Context
 
 **Symptom**: Sandbox returns thousands of records or multi-megabyte documents directly to model, causing context bloat and high costs.
@@ -1263,8 +1253,6 @@ print(f"Top 5 high-value: {high_value[:5]}")  # 500 tokens
 
 **Sources**: [R1]
 
----
-
 ### Anti-pattern: Unsandboxed Code Execution
 
 **Symptom**: Agent-generated code runs directly on host system without isolation, resource limits, or audit logging.
@@ -1298,8 +1286,6 @@ const result = await sandbox.execute(code, {
 ```
 
 **Sources**: [R1]
-
----
 
 ### Anti-pattern: Missing Type Annotations in Wrappers
 
@@ -1339,8 +1325,6 @@ async def get_document(input: GetDocumentInput) -> GetDocumentResponse:
 ```
 
 **Sources**: [R1]
-
----
 
 ### Anti-pattern: No Error Handling or Retries
 
