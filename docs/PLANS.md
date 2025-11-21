@@ -4,7 +4,7 @@ slug: exec-plan
 summary: "AI-driven task management"
 type: spec
 tags: [topic, ai-first, agent, planning, execution, all-model]
-last_updated: 2024-11-19
+last_updated: 2025-11-22
 ---
 
 # Topic: ExecPlan and PLANS.md — Model-Agnostic Execution Planning for AI-Driven Development
@@ -42,8 +42,8 @@ last_updated: 2024-11-19
 - **WHAT**: ExecPlan is a structured Markdown-based methodology for managing multi-hour AI-driven development tasks through living documents that agents continuously update
 - **WHY**: Enables AI agents to maintain context, track progress, and autonomously complete complex tasks without losing state across sessions or context windows
 - **WHEN**: Use for any development task requiring >30 minutes of AI agent work, complex features, significant refactors, or multi-step implementations
-- **HOW**: Create a PLANS.md file with mandatory sections (Progress, Surprises, Decisions, Outcomes), maintain it as work progresses, and ensure complete self-containment
-- **WATCH_OUT**: Never rely on external documentation links; all knowledge must be embedded directly in the plan for true self-containment
+- **HOW**: Create a PLANS.md file following the **Standard ExecPlan Schema** (MUST), including Safety Constraints, and maintain it as work progresses.
+- **WATCH_OUT**: Never rely on external documentation links for execution; all necessary knowledge must be embedded. Ensure strict adherence to ISO 8601 timestamps.
 
 ---
 
@@ -111,17 +111,17 @@ button that redirects to Google and returns authenticated users to the dashboard
 **Related Concepts**:
 - **Similar**: Agile sprint retrospectives, decision records, progress reports
 - **Contrast**: Fixed specifications, waterfall documentation
-- **Contains**: Timestamps, evidence, rationale, attribution
+- **Contains**: Timestamps (ISO 8601), evidence, rationale, attribution
 
 **Example**:
 
 ```markdown
 ## Decision Log
-- 2025-11-16 14:20 - Chose to use passport.js over manual OAuth2 implementation
+- 2025-11-16T14:20:00Z - Chose to use passport.js over manual OAuth2 implementation
   Rationale: Well-tested, reduces security risks, 5 minutes vs 2 hours
   Author: AI Agent (Claude)
 
-- 2025-11-16 14:35 - Storing refresh tokens in encrypted database column
+- 2025-11-16T14:35:00Z - Storing refresh tokens in encrypted database column
   Rationale: Enables offline access, follows security best practices
   Author: AI Agent (Claude)
 ```
@@ -139,7 +139,7 @@ button that redirects to Google and returns authenticated users to the dashboard
   - Complete context about current system state
   - Full command sequences with expected outputs
 - **Excludes**:
-  - Links to external documentation as primary source
+  - Links to external documentation as *primary* source (See Also links are for learning only, not execution)
   - Assumptions about prior knowledge
   - References to undefined concepts
   - Incomplete instructions requiring outside research
@@ -175,6 +175,70 @@ Technical terms:
 
 ## Core Patterns
 
+### Pattern: Standard ExecPlan Schema
+
+**Intent**: Enforce a strict, consistent structure across all ExecPlans to ensure machine-readability, safety, and completeness.
+
+**Context**: Every time an ExecPlan is created.
+
+**Implementation**:
+
+All ExecPlans **MUST** adhere to the following schema structure.
+
+```markdown
+# ExecPlan: <Feature Name>
+
+## Purpose / Big Picture (MUST)
+<What to achieve. User perspective. 1-3 paragraphs.>
+
+## Context and Orientation (MUST)
+<Current architecture, related files, key term definitions.>
+
+## Constraints & Safety (MUST)
+- **Allowed Directories**: `src/**`, `tests/**`
+- **Forbidden Operations**: `rm -rf`, direct infra changes, production deployment
+- **Deployment**: Staging only via script
+- **Secrets**: No hardcoded secrets; use env vars
+
+## Acceptance Criteria (MUST)
+- [ ] User can <action>
+  - Verification: `npm test tests/feature_x.test.ts`
+  - Expected Output: `✓ all tests passed`
+
+## Milestones (SHOULD)
+### Milestone 1: <Name>
+- Deliverables: ...
+- Verify by: ...
+
+## Progress (MUST)
+- [ ] 2025-11-22T14:00:00Z - Task started (Author: Agent-007)
+
+## Surprises & Discoveries (MUST)
+- 2025-11-22T14:10:00Z - Found legacy code issue
+  - Evidence: `src/legacy.ts:42`
+
+## Decision Log (MUST)
+- 2025-11-22T14:20:00Z - Selected Library X
+  - Rationale: Better performance
+  - Author: Agent-007
+
+## Outcomes & Retrospective (MUST)
+- Summary of achievements
+- Lessons learned
+```
+
+**Key Principles**:
+- **Strict Ordering**: Agents rely on section order for parsing.
+- **Mandatory Safety**: Constraints must be explicit.
+- **ISO 8601 Timestamps**: All logs must use `YYYY-MM-DDTHH:MM:SSZ`.
+- **Author Attribution**: Every log entry must identify the author.
+
+**Trade-offs**:
+- ✅ **Advantages**: Predictable parsing, guaranteed safety checks, audit trail.
+- ⚠️ **Disadvantages**: Verbose for very small tasks (but ExecPlan is for >30min tasks).
+
+**Sources**: [R1]
+
 ### Pattern: Three-Phase Development Process
 
 **Intent**: Separate planning, implementation, and verification into distinct AI agent sessions to maximize focus and reduce context pollution.
@@ -200,7 +264,7 @@ Agent: [Runs tests, confirms behaviors, updates Outcomes section]
 
 **Key Principles**:
 - **Clean Context**: Each phase starts with reset context to avoid confusion
-- **Plan Immutability**: During execution, only Progress/Surprises update, not the plan itself
+- **Plan Immutability**: During execution sessions, the plan body (Milestones, Requirements) is **immutable**. Only Progress/Surprises/Decisions update. If the plan *must* change, use the Plan Revision Workflow.
 - **Verification Independence**: Different perspective catches issues
 
 **Trade-offs**:
@@ -349,7 +413,7 @@ markdown
 
 **Intent**: Systematically handle situations where the original plan proves incorrect or impossible, maintaining traceability of changes.
 
-**Context**: When Surprises & Discoveries reveal fundamental flaws in assumptions, technical blockers, or better approaches.
+**Context**: When Surprises & Discoveries reveal fundamental flaws in assumptions, technical blockers, or better approaches. **Note**: Do not revise the plan for minor adjustments; only for structural changes that invalidate current milestones.
 
 **Implementation**:
 
@@ -478,6 +542,16 @@ markdown
   - **Verify**: Clear instructions for handling failures and retrying
   - **Impact**: Stuck state when errors occur
   - **Mitigation**: Add "If this fails..." sections with recovery steps
+
+- [ ] **Strict Schema Compliance**: Plan follows the Standard ExecPlan Schema [R1]
+  - **Verify**: All MUST sections present in correct order. Constraints & Safety defined.
+  - **Impact**: Agent confusion, safety violations.
+  - **Mitigation**: Use the standard template.
+
+- [ ] **Timestamp & Attribution**: All log entries use ISO 8601 and identify author [R1]
+  - **Verify**: `YYYY-MM-DDTHH:MM:SSZ` format used consistently.
+  - **Impact**: Inability to calculate freshness metrics.
+  - **Mitigation**: Enforce format in prompt or linter.
 
 ---
 
@@ -629,7 +703,8 @@ These examples are intended as copy-pastable starting points that novice users a
 
 ## Update Log
 
-- **2024-11-19** – Added Multi-Agent Coordination pattern with lock-based editing, message passing, and synchronization mechanisms. Added Plan Revision Workflow pattern with systematic change management and traceability guidelines. (Author: AI-First)
+- **2025-11-22** – Refined specification based on peer review. Added "Standard ExecPlan Schema" with mandatory Safety Constraints. Enforced ISO 8601 timestamps and author attribution. Clarified Plan Immutability and Revision protocols. (Author: AI-First)
+- **2025-11-19** – Added Multi-Agent Coordination pattern with lock-based editing, message passing, and synchronization mechanisms. Added Plan Revision Workflow pattern with systematic change management and traceability guidelines. (Author: AI-First)
 - **2025-11-16** – Initial document creation based on OpenAI Cookbook specification (Author: Claude)
 
 ---
