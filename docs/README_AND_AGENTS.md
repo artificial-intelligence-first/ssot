@@ -1,10 +1,10 @@
 ---
 title: AGENTS.md and README.md for AI-First Repositories
 slug: agents-readme
-summary: "Agents & README Guide"
+summary: "Guide for implementing README and AGENTS documentation patterns"
 type: guide
 tags: [topic, ai-first, documentation, agents, readme, repository-structure]
-last_updated: 2024-11-19
+last_updated: 2025-11-22
 ---
 
 # Topic: AGENTS.md and README.md for AI-First Repositories
@@ -45,6 +45,7 @@ last_updated: 2024-11-19
 - **WHEN**: Use at repository initialization, when adding new subsystems/services, introducing AI agents to existing projects, or refactoring monorepo structures
 - **HOW**: Create root-level README.md (orientation) and AGENTS.md (agent catalog) with bidirectional links; add subdirectory versions ONLY at architectural boundaries (apps/*, packages/*, services/*); maintain parent (map) vs. child (guidebook) relationship
 - **WATCH_OUT**: Avoid over-documentation in low-level directories, duplicating content between README and AGENTS, missing navigation links, or using abstract templates without concrete examples
+- **USAGE**: This document (`docs/README_AND_AGENTS.md`) serves as the **specification and guide**. In your actual repository, you should create a root `README.md` and `AGENTS.md` that *implement* these patterns, populated with your project's specific details.
 
 ---
 
@@ -144,7 +145,8 @@ last_updated: 2024-11-19
 - Runtime, package manager, languages, infrastructure
 
 ## Quick Start
-bash
+
+```bash
 # Prerequisites
 npm install -g pnpm
 
@@ -155,6 +157,8 @@ pnpm install
 pnpm dev      # Start development
 pnpm test     # Run tests
 pnpm lint     # Check code quality
+pnpm agents:run # Run local agent orchestration
+```
 
 ## Repository Layout
 - `apps/` - Deployable applications
@@ -196,10 +200,24 @@ Complete inventory of autonomous agents operating across this repository.
 
 - **Type**: Manager
 - **Scope**: Entire repository
+- **Version**: 1.0.0
 - **Mission**: Coordinate multi-agent workflows, resolve conflicts, maintain architectural consistency
+- **Triggers**:
+  - Manual invocation via CLI
+  - PR comments mentioning `@repo-orchestrator`
+- **Implementation**:
+  - **Config**: `./config/agents/repo-orchestrator.yaml`
+  - **Runtime**: Node.js 18 + OpenAI Agents SDK
+  - **Entrypoint**: `pnpm agents:run repo-orchestrator`
 - **Inputs**: Task requests, agent capability queries, conflict reports
 - **Outputs**: Task assignments, resolution decisions, architecture guidance
 - **Tools**: GitHub API, project management systems, static analysis tools
+- **Security & Permissions**:
+  - **Allowed**: Read/Write issues, Read code, Trigger CI workflows
+  - **Forbidden**: Direct database access, Secret viewing, Production deployment
+- **Observability**:
+  - **Logs**: stdout (JSON formatted)
+  - **Metrics**: `agent_task_duration_seconds`, `agent_success_rate`
 - **Constraints**:
   - Cannot modify database schemas directly
   - Must consult specialists before cross-cutting changes
@@ -209,10 +227,21 @@ Complete inventory of autonomous agents operating across this repository.
 
 - **Type**: Specialist
 - **Scope**: Database and backend services
+- **Version**: 2.1.0 (Compatible with Schema v3+)
 - **Mission**: Manage database schema evolution, optimize queries, ensure data integrity
+- **Triggers**:
+  - Changes to `supabase/migrations/**`
+  - Manual request for query optimization
+- **Implementation**:
+  - **Config**: `./config/agents/supabase-agent.yaml`
+  - **Runtime**: Python 3.11 + LangChain
+  - **Entrypoint**: `python -m agents.supabase start`
 - **Inputs**: Schema change requests, performance reports, migration scripts
 - **Outputs**: Migration files, query optimizations, schema documentation
 - **Tools**: Supabase CLI, SQL analyzers, migration generators
+- **Security & Permissions**:
+  - **Allowed**: Execute SQL on Staging/Dev, Read Production Schema
+  - **Forbidden**: Execute SQL on Production (Write), Delete backups
 - **Constraints**:
   - All schema changes require migration files
   - Must maintain backward compatibility for 2 versions
@@ -609,10 +638,11 @@ jobs:
 
 ## Update Log
 
-- **2024-11-19** – Added comprehensive CI/CD Automation section with validation workflows, automated agent extraction from code, and validation scripts. Added Migration Guide with phased approach for converting existing projects to README/AGENTS structure. (Author: AI-First)
+- **2025-11-22** – Refined templates based on peer review. Added `Triggers`, `Implementation`, `Security`, and `Observability` fields to AGENTS.md template. Fixed README.md code block syntax. Clarified document purpose as a guide. (Author: AI-First)
+- **2025-11-19** – Added comprehensive CI/CD Automation section with validation workflows, automated agent extraction from code, and validation scripts. Added Migration Guide with phased approach for converting existing projects to README/AGENTS structure. (Author: AI-First)
 - **2025-11-17** – Updated AGENTS.md basic structure section to include Primary Directive as the first section, providing repository-wide behavior rules for all autonomous agents. Reorganized structure documentation for clarity. (Author: AI-First)
-- **2025-11-14** – Standardized Agent Contract and TL;DR sections for consistency with other SSOT documents. Updated canonical URL for renamed file. (Author: AI-First)
 - **2025-11-15** – Initial document creation based on AGENTS.md spec, README best practices, and AI-first architecture patterns. (Author: AI-First)
+- **2025-11-14** – Standardized Agent Contract and TL;DR sections for consistency with other SSOT documents. Updated canonical URL for renamed file. (Author: AI-First)
 
 ---
 
