@@ -347,24 +347,24 @@ locks:
     files:
       - src/components/**
       - styles/**
-    acquired: 2024-11-19T10:30:00Z
-    expires: 2024-11-19T11:30:00Z
+    acquired: 2025-11-19T10:30:00Z
+    expires: 2025-11-19T11:30:00Z
   - agent: backend-agent-02
     files:
       - api/**
       - models/**
-    acquired: 2024-11-19T10:35:00Z
-    expires: 2024-11-19T11:35:00Z
+    acquired: 2025-11-19T10:35:00Z
+    expires: 2025-11-19T11:35:00Z
 
 #### 2. Message Passing
 markdown
 ## Inter-Agent Messages
 
-### [2024-11-19 10:45] Frontend → Backend
+### [2025-11-19 10:45] Frontend → Backend
 Need new endpoint: GET /api/notifications/unread-count
 Expected response: { count: number, lastChecked: string }
 
-### [2024-11-19 10:50] Backend → Frontend
+### [2025-11-19 10:50] Backend → Frontend
 Endpoint ready at: GET /api/notifications/unread-count
 Added WebSocket event: 'notification:count-updated'
 
@@ -372,7 +372,7 @@ Added WebSocket event: 'notification:count-updated'
 markdown
 ## Conflict Log
 
-### [2024-11-19 11:00] Merge Conflict in models/User.ts
+### [2025-11-19 11:00] Merge Conflict in models/User.ts
 - Frontend Agent: Added displayName field
 - Backend Agent: Added lastLoginAt field
 - Resolution: Both changes accepted, no overlap
@@ -432,7 +432,7 @@ markdown
 markdown
 ## Surprises & Discoveries
 
-### [2024-11-19 14:30] REVISION NEEDED: Database Approach Won't Scale
+### [2025-11-19 14:30] REVISION NEEDED: Database Approach Won't Scale
 - **Originally Planned**: Store notifications in PostgreSQL with polling
 - **Issue Discovered**: Polling every second for 10K users = 10K queries/sec
 - **Evidence**: Load test showed 98% CPU at 1K users
@@ -442,7 +442,7 @@ markdown
 markdown
 ## Decision Log
 
-### [2024-11-19 14:45] REVISION PROPOSAL: Switch to Event Streaming
+### [2025-11-19 14:45] REVISION PROPOSAL: Switch to Event Streaming
 **Current Approach**: PostgreSQL + polling
 **Proposed Approach**: Redis Streams + Server-Sent Events
 **Rationale**:
@@ -459,7 +459,7 @@ markdown
 ## Plan Revision History
 
 ### Revision 1: Notification System Architecture
-**Date**: 2024-11-19 15:00
+**Date**: 2025-11-19 15:00
 **Sections Modified**:
 - Milestone 2: Changed from "PostgreSQL Queue" to "Redis Streams"
 - Milestone 3: Changed from "Polling API" to "SSE Endpoint"
@@ -487,9 +487,9 @@ markdown
 ## Progress
 
 ### Timeline Impact Assessment
-- Original completion: 2024-11-22
+- Original completion: 2025-11-22
 - Revision overhead: +2 days (learning + implementation)
-- New completion: 2024-11-24
+- New completion: 2025-11-24
 - Mitigation: Parallelize Milestone 4 with Milestone 5
 
 ### Revision Guidelines
