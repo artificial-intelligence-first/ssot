@@ -123,6 +123,7 @@ Follow the structured templates in `_templates/SECTION_TEMPLATE.md` for consiste
 | [AGENT_SKILL.md](./docs/AGENT_SKILL.md) | Agent Skill All Model specification | Stable |
 | [CODE_MCP.md](./docs/CODE_MCP.md) | Model Context Protocol implementation | Stable |
 | [PLANS.md](./docs/PLANS.md) | ExecPlan methodology and patterns | Stable |
+| [SSOT.md](./docs/SSOT.md) | Single Source of Truth governance guide | Stable |
 | [README_AND_AGENTS.md](./docs/README_AND_AGENTS.md) | Documentation architecture patterns | Stable |
 
 ### Templates and Tools
@@ -178,4 +179,4 @@ MIT License - See [LICENSE](./LICENSE) for full terms.
 
 **Repository**: [github.com/artificial-intelligence-first/ssot](https://github.com/artificial-intelligence-first/ssot)
 **Maintained by**: AI-First Development Team
-**Last Updated**: 2025-11-17
+**Last Updated**: 2025-11-22

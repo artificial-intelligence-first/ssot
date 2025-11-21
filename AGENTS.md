@@ -66,5 +66,5 @@ Legend:
 
 ## Context
 For repository overview and human setup instructions, see [README.md](./README.md).
-For architectural context, see [docs/SSOT.md](./docs/SSOT.md).
+For architectural context and governance, see [docs/SSOT.md](./docs/SSOT.md).
 
