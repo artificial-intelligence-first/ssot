@@ -4,7 +4,7 @@ slug: code-mcp
 summary: "Code MCP guide"
 type: reference
 tags: [topic, ai-first, agent, mcp, code, optimization]
-last_updated: 2024-11-19
+last_updated: 2025-11-22
 ---
 
 # Topic: Code MCP — Model-Agnostic Code Execution MCP Implementation Guide
@@ -25,6 +25,8 @@ last_updated: 2024-11-19
   - Systems without sandboxing capabilities (security risk)
   - Real-time latency-critical applications where sandbox overhead is unacceptable
   - Environments where code generation by models is unreliable or unavailable
+  - Simple single-tool invocations where overhead exceeds benefits (use direct tool calling)
+  - Small-scale tasks with low frequency where infrastructure maintenance outweighs value
 - **PRIORITY**:
   - This specification takes precedence over direct MCP tool invocation when token optimization is critical
   - Security requirements override cost optimization—never sacrifice isolation for performance
@@ -351,6 +353,12 @@ async function executeSandboxed(
 - ✅ **Advantages**: Security, reproducibility, resource control, compliance-ready
 - ⚠️ **Disadvantages**: Latency overhead (~100-500ms), complexity, infrastructure requirements
 - 💡 **Alternatives**: Unrestricted execution (unsafe), VM-based (heavier), WASM (limited capabilities)
+
+**Critical Security Note**:
+Language-level sandboxes (like Python's `restricted_imports` example below) are **insufficient** for production security. They must **always** be wrapped in OS-level isolation (Docker, Firecracker, gVisor) to prevent container escapes and resource exhaustion.
+
+**Optimization Note**:
+To mitigate container startup latency (Cold Start), implement a **Warm Pool** strategy where a set of initialized containers are kept ready for immediate execution.
 
 **Concrete Implementation Examples**:
 
@@ -1130,12 +1138,126 @@ if (require.main === module) {
 
 ---
 
+### Pattern: System Prompt Design
+
+**Intent**: Configure the model to act as a code-generating agent that discovers and uses tools via sandboxed execution, rather than expecting direct tool invocation.
+
+**Context**: When initializing the agent session and defining its operational boundaries.
+
+**Implementation**:
+
+```markdown
+# System Prompt Template
+
+You are an expert AI agent with access to a secure code execution environment.
+Your goal is to solve tasks by writing Python/TypeScript code.
+
+## Capabilities
+- **No Direct Tool Calls**: You cannot call tools directly. Instead, you must write code to import and use them.
+- **Tool Access**: Tools are available in the `mcp_tools` module or via standard imports.
+- **Discovery**:
+  1. Search for tools: `await mcp_tools.search_tools({ query: "..." })`
+  2. Read definitions: `await mcp_tools.read_file("servers/...")`
+- **Execution**: Write complete, executable scripts.
+
+## Workflow
+1. **Search**: Find relevant tools for the task.
+2. **Inspect**: Read tool schemas if you are unsure of arguments.
+3. **Plan**: Outline your approach.
+4. **Code**: Write a complete script to execute the plan.
+5. **Review**: Analyze the execution output and refine if necessary.
+
+## Constraints
+- **Data Handling**: Do not output raw data > 50 lines. Summarize it in code.
+- **Error Handling**: Handle errors gracefully with try/catch blocks.
+- **Imports**: Use only allowed libraries.
+```
+
+**Key Principles**:
+- **Role Definition**: Explicitly shift model from "tool caller" to "coder".
+- **Discovery Instructions**: Teach the model how to find tools (Progressive Disclosure).
+- **Output Constraints**: Enforce summarization to save tokens.
+- **One-Shot Examples**: Include at least one example of the Search -> Read -> Code loop.
+
+**Trade-offs**:
+- ✅ **Advantages**: Clear expectations, reduced hallucinations, standardized behavior
+- ⚠️ **Disadvantages**: Consumes system prompt tokens (though less than full tool definitions)
+- 💡 **Alternatives**: Fine-tuning (expensive), hardcoded logic (inflexible)
+
+---
+
+### Pattern: Self-Correction Loop
+
+**Intent**: Automatically recover from execution errors by analyzing stack traces and rewriting code, with strict iteration limits to prevent infinite loops.
+
+**Context**: When the sandboxed execution returns a non-zero exit code or exception.
+
+**Implementation**:
+
+```python
+# Agent execution loop with self-correction
+MAX_RETRIES = 3
+
+async def run_agent_task(task: str):
+    context = initialize_context(task)
+    attempts = 0
+
+    while attempts < MAX_RETRIES:
+        # 1. Generate Code
+        code = await model.generate_code(context)
+
+        # 2. Execute in Sandbox
+        result = await sandbox.execute(code)
+
+        if result.success:
+            return result.output
+
+        # 3. Analyze Error
+        attempts += 1
+        error_msg = f"Execution failed (Attempt {attempts}/{MAX_RETRIES}):\n{result.stderr}"
+
+        # 4. Update Context with Error
+        context.append({
+            "role": "user",
+            "content": f"The code failed with this error:\n{error_msg}\n"
+                       f"Please fix the code and try again."
+        })
+
+    # Fallback after max retries
+    raise AgentError("Failed to complete task after multiple attempts.")
+```
+
+**Key Principles**:
+- **Feedback Loop**: Feed stderr/exceptions back to the model as context.
+- **Iteration Limit**: Hard limit (e.g., 3 retries) to prevent infinite token consumption.
+- **State Preservation**: Maintain conversation history so the model knows what failed previously.
+- **Human Handoff**: Escalate to human or return structured error after max retries.
+
+**Trade-offs**:
+- ✅ **Advantages**: Robustness, ability to fix minor syntax/logic errors, higher success rate
+- ⚠️ **Disadvantages**: Increased latency and token cost per task
+- 💡 **Alternatives**: Single-shot (fragile), human-in-the-loop (slow)
+
+**Sources**: [R1]
+
+---
+
 ## Decision Checklist
 
 - [ ] **Sandbox environment configured with resource limits**: CPU, memory, time, disk, FD, thread limits enforced [R1]
   - **Verify**: Test sandbox with resource-intensive code, confirm limits trigger
   - **Impact**: Without limits, malicious/buggy code can DoS host system
   - **Mitigation**: Use proven sandboxing (Docker, Firecracker, gVisor) with preset profiles
+
+- [ ] **OS-level isolation is mandatory**: Language-level sandboxes (e.g., Python `restricted_imports`) are used ONLY as a secondary defense layer [R1]
+  - **Verify**: Confirm Docker/Firecracker/gVisor is wrapping the execution runtime
+  - **Impact**: Container escape, host system compromise
+  - **Mitigation**: Deploy with `gvisor-runsc` or similar secure runtime
+
+- [ ] **Warm pools implemented for latency sensitivity**: Idle containers kept ready [R1]
+  - **Verify**: Measure start-up latency; should be <500ms
+  - **Impact**: Poor user experience due to cold start delays (1-3s)
+  - **Mitigation**: Maintain a pool of 2-5 warm sandboxes
 
 - [ ] **Network access restricted to required domains**: Allowlist configured, sensitive destinations blocked [R1]
   - **Verify**: Attempt connections to non-allowed domains, confirm blocks
@@ -1166,6 +1288,16 @@ if (require.main === module) {
   - **Verify**: Simulate network failures, confirm retry behavior
   - **Impact**: Task failures from transient issues, poor user experience
   - **Mitigation**: Implement retry decorator with jitter, circuit breakers
+
+- [ ] **Self-correction loop has hard limits**: Max retries set (e.g., 3) to prevent infinite loops [R1]
+  - **Verify**: Test with permanently failing code, confirm loop terminates
+  - **Impact**: Infinite token consumption, stuck processes
+  - **Mitigation**: Counter in execution loop
+
+- [ ] **Debug replay capability**: System stores inputs/seeds to reproduce failures [R1]
+  - **Verify**: Re-run a past job ID and confirm identical execution path
+  - **Impact**: Inability to diagnose complex agent failures
+  - **Mitigation**: Store full context, seeds, and code in immutable logs
 
 - [ ] **Secrets managed via secure storage (Vault, env vars)**: No hardcoded credentials [R1]
   - **Verify**: Scan codebase for secrets, confirm environment-based loading
@@ -1373,6 +1505,32 @@ async function callMCPTool(tool: string, input: any, opts?: CallOptions) {
 
 **Sources**: [R1]
 
+### Anti-pattern: Language-Level Sandboxing Only
+
+**Symptom**: Relying solely on Python's `restricted_imports` or Node.js `vm` module for security.
+
+**Why It Happens**: Easier to implement than Docker/Firecracker; misconception that it is "good enough".
+
+**Impact**:
+- Trivial to bypass (e.g., via introspection, segfaults, or logic bombs)
+- False sense of security
+- No resource isolation (CPU/Memory bombs still work)
+
+**Solution**: Always wrap language runtimes in OS-level virtualization (Containers, MicroVMs). Language-level restrictions are only a defense-in-depth measure.
+
+### Anti-pattern: Infinite Correction Loops
+
+**Symptom**: Agent keeps trying to fix code that fails with the same error, consuming infinite tokens until timeout.
+
+**Why It Happens**: Missing iteration counter in the agent loop; assuming the model will eventually "get it right".
+
+**Impact**:
+- Massive token waste
+- System hangs
+- User frustration
+
+**Solution**: Implement a strict `MAX_RETRIES` counter. If code fails N times, abort with a structured error or request human intervention.
+
 ---
 
 ## Evaluation
@@ -1509,6 +1667,7 @@ await analytics.save_report({
 
 ## Update Log
 
+- **2025-11-22** – Updated based on peer review: added System Prompt Design and Self-Correction Loop patterns, clarified OS-level sandbox requirements, added warm pool and debug replay checklists. (Author: AI-First)
 - **2024-11-19** – Enhanced Sandbox-Based Execution pattern with complete Docker implementation, security profiles, and Python wrapper. Added TypeScript stub generation implementation with full type mapping and CLI tooling. (Author: AI-First)
 - **2025-11-14** – Added Practical Examples section with document processing and data analysis pipeline examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering Code MCP architecture, implementation patterns, progressive disclosure, sandbox execution, security practices, and cost optimization strategies. (Author: AI-First)
