@@ -4,7 +4,7 @@ slug: agent-skill
 summary: "Skill spec overview"
 type: spec
 tags: [topic, ai-first, agent, skill, specification]
-last_updated: 2024-11-19
+last_updated: 2025-11-22
 ---
 
 # Topic: Agent Skill All Model - Universal Specification
@@ -103,6 +103,7 @@ pdf-processing/
 - **Similar**: Hexagonal architecture, adapter pattern, plugin systems
 - **Contrast**: Tightly-coupled platform SDKs, hardcoded integrations
 - **Contains**: Specification layer, adapter layer, implementation layer
+- **Ecosystem**: Layer 2 adapters bridge to MCP, OpenAI Actions, and LangChain Tools
 
 **Example**:
 
@@ -573,6 +574,150 @@ spec:
 
 ---
 
+### Pattern: Formal Manifest Schema
+
+**Intent**: Define a strict, versioned structure for `skill.yaml` to ensure validation tools and IDEs can reliably parse and autocomplete skill definitions.
+
+**Context**: As the ecosystem grows, ad-hoc YAML structures lead to fragmentation. A formal schema ensures consistency across all skills.
+
+**Implementation**:
+
+```yaml
+apiVersion: skills.v1
+kind: Skill
+metadata:
+  id: com.example.pdf_processing
+  version: 1.0.0
+spec:
+  tools: [...]
+permissions: [...]
+secrets:    # New: Explicit secret declaration
+  required: [...]
+host_overrides: [...]
+```
+
+**Key Principles**:
+- **Versioning**: `apiVersion` allows the schema to evolve without breaking existing skills
+- **Root Validation**: Top-level keys are fixed; no arbitrary fields allowed
+- **Type Safety**: Each section enforces specific types (e.g., `permissions` must be an object)
+
+**Trade-offs**:
+- ✅ **Advantages**: Enables linting, validation, and reliable parsing
+- ⚠️ **Disadvantages**: Slightly more verbose boilerplate
+- 💡 **Alternatives**: Schemaless YAML (flexible but fragile)
+
+**Sources**: [R1]
+
+---
+
+### Pattern: Declarative Secrets
+
+**Intent**: Explicitly declare required credentials (API keys, tokens) without embedding them in code or configuration files.
+
+**Context**: Skills often need external services (OCR, Database, APIs) but should never store secrets in the repository.
+
+**Implementation**:
+
+```yaml
+secrets:
+  required:
+    - name: OCR_SERVICE_API_KEY
+      description: "API key for the external OCR provider"
+      usage: env  # Injected as environment variable
+    - name: DATABASE_URL
+      description: "Connection string for results storage"
+      optional: true
+```
+
+**Key Principles**:
+- **Declaration Only**: Skill defines *what* it needs, Host decides *how* to provide it
+- **Environment Injection**: Secrets are typically exposed as environment variables to the runtime
+- **Validation**: Host checks for presence of required secrets before starting the skill
+
+**Trade-offs**:
+- ✅ **Advantages**: Security, separation of concerns, no hardcoded secrets
+- ⚠️ **Disadvantages**: Requires host support to manage and inject secrets
+- 💡 **Alternatives**: `.env` files (hard to manage in production), hardcoding (insecure)
+
+**Sources**: [R1]
+
+---
+
+### Pattern: Standardized Runtime Protocol
+
+**Intent**: Define standard behavior for errors, cancellations, and asynchronous operations to ensure consistent host handling.
+
+**Context**: Different hosts handle errors differently. A standard protocol ensures the model understands failures regardless of the environment.
+
+**Implementation**:
+
+```python
+# Standardized Error Response
+{
+  "status": "error",
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Upstream service rate limit hit. Retry in 60s.",
+    "retry_after": 60,
+    "retriable": true
+  }
+}
+
+# Async Job Response
+{
+  "status": "async",
+  "job_id": "job_12345",
+  "message": "Processing started. Poll status with get_job_status."
+}
+```
+
+**Key Principles**:
+- **Structured Errors**: Machine-readable error codes enable intelligent retries by the Agent
+- **Async Support**: Protocol anticipates long-running tasks via job IDs
+- **Cancellation**: Hosts can signal cancellation via standard signals (SIGTERM)
+
+**Trade-offs**:
+- ✅ **Advantages**: Predictable behavior, better error recovery, support for long tasks
+- ⚠️ **Disadvantages**: Implementation complexity for simple scripts
+- 💡 **Alternatives**: Throwing raw exceptions (confusing to models)
+
+**Sources**: [R1]
+
+---
+
+### Pattern: Host-Mediated Composition
+
+**Intent**: Allow skills to utilize other skills' capabilities only through the Host, preventing direct coupling and "dependency hell."
+
+**Context**: A complex skill (e.g., "Research") might need a simpler skill (e.g., "Web Search"). Direct imports create tight coupling.
+
+**Implementation**:
+
+```python
+# ❌ Anti-pattern: Direct import
+from my_other_skill import search  # Hard dependency
+
+# ✅ Correct pattern: Host-mediated
+def research_topic(topic, ctx):
+    # Request host to execute another tool
+    results = ctx.host.execute_tool("web_search", {"query": topic})
+    return summarize(results)
+```
+
+**Key Principles**:
+- **Loose Coupling**: Skills remain independent units
+- **Host Control**: Host maintains visibility and control over the call stack
+- **Mockability**: Easier to test skills in isolation by mocking the host
+
+**Trade-offs**:
+- ✅ **Advantages**: Modularity, easier testing, no circular dependencies
+- ⚠️ **Disadvantages**: Higher latency (IPC overhead), complex host interface
+- 💡 **Alternatives**: Shared libraries (good for utility code, bad for full skills)
+
+**Sources**: [R1]
+
+---
+
 ## Decision Checklist
 
 - [ ] **Skill follows folder-based structure**: Directory contains `skill.yaml` + implementations + docs [R1]
@@ -619,6 +764,16 @@ spec:
   - **Verify**: Cross-reference `runtime.dependencies` with actual imports
   - **Impact**: Runtime errors from missing dependencies
   - **Mitigation**: Use dependency scanning tools or containerization
+
+- [ ] **Secrets declared in manifest**: No hardcoded credentials in code [R1]
+  - **Verify**: Check `secrets.required` vs code usage of `os.environ`
+  - **Impact**: Security leaks, deployment failures
+  - **Mitigation**: Scan code for high-entropy strings and move to `secrets`
+
+- [ ] **Skill Composition via Host**: No direct imports of other skills [R1]
+  - **Verify**: Check imports for references to other skill directories
+  - **Impact**: Tight coupling, broken portability
+  - **Mitigation**: Refactor to use `ctx.host.execute_tool()`
 
 - [ ] **Documentation exists for both humans and models**: `README.md` and optional `INSTRUCTIONS.md` [R1]
   - **Verify**: Check file existence and non-empty content
@@ -1154,6 +1309,7 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 ## Update Log
 
 - **2024-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
+- **2025-11-22** – Refined specification based on multi-agent review. Added Formal Manifest Schema, Declarative Secrets, Standardized Runtime Protocol, and Host-Mediated Composition patterns. Clarified MCP relationship. (Author: AI-First)
 - **2025-11-14** – Added Practical Skill Examples section with frontend and document processing examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering manifest structure, three-layer model, permissions, safety, progressive disclosure, and dual runtime support. (Author: AI-First)
 
