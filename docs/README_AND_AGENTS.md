@@ -168,8 +168,8 @@ pnpm agents:run # Run local agent orchestration
 
 ## Documentation
 - [AGENTS.md](./AGENTS.md) - Agent catalog and specifications
-- [SSOT.md](./docs/SSOT.md) - Single source of truth topics
-- [PLANS.md](./docs/PLANS.md) - Project roadmap and planning
+- [SSOT.md](./SSOT.md) - Single source of truth topics
+- [PLANS.md](./PLANS.md) - Project roadmap and planning
 
 ## License
 MIT

@@ -65,6 +65,5 @@ Legend:
 - Specific SSOT topic or maintenance → `doc-maintainer`
 
 ## Context
-For repository overview and human setup instructions, see [README.md](./README.md).
+For repository overview and human setup instructions, see [README.md](https://github.com/artificial-intelligence-first/ssot/blob/main/README.md).
 For architectural context and governance, see [docs/SSOT.md](./docs/SSOT.md).
-

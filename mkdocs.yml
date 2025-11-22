@@ -1,0 +1,85 @@
+site_name: AI-First SSOT
+site_description: Single Source of Truth for AI-first development
+site_url: https://artificial-intelligence-first.github.io/ssot/
+repo_name: artificial-intelligence-first/ssot
+repo_url: https://github.com/artificial-intelligence-first/ssot
+edit_uri: ""
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - toc.integrate
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - footnotes
+  - tables
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+
+extra_css:
+  - overrides/extra.css
+
+plugins:
+  - gen-files:
+      scripts:
+        - tools/gen_docs.py
+  - search
+
+nav:
+  - Home: index.md
+  - Agents Catalog: AGENTS.md
+  - Core Guides:
+      - SSOT Governance Guide: SSOT.md
+      - README & AGENTS Patterns: README_AND_AGENTS.md
+      - Agent Skill Specification: AGENT_SKILL.md
+      - Code MCP Guide: CODE_MCP.md
+      - Exec Plan Methodology: PLANS.md
+  - Templates:
+      - Topic Template: _templates/TOPIC_TEMPLATE.md
+      - Section Template: _templates/SECTION_TEMPLATE.md
+      - Front Matter Guide: _templates/FRONT_MATTER.md
