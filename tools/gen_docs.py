@@ -10,11 +10,11 @@ import mkdocs_gen_files
 ROOT = Path(__file__).resolve().parent.parent
 
 SOURCES = {
-    "index.md": ROOT / "README.md",
-    "AGENTS.md": ROOT / "AGENTS.md",
-    "_templates/TOPIC_TEMPLATE.md": ROOT / "docs/_templates/TOPIC_TEMPLATE.md",
-    "_templates/SECTION_TEMPLATE.md": ROOT / "docs/_templates/SECTION_TEMPLATE.md",
-    "_templates/FRONT_MATTER.md": ROOT / "docs/_templates/FRONT_MATTER.md",
+    "index.md": "README.md",
+    "AGENTS.md": "AGENTS.md",
+    "_templates/TOPIC_TEMPLATE.md": "docs/_templates/TOPIC_TEMPLATE.md",
+    "_templates/SECTION_TEMPLATE.md": "docs/_templates/SECTION_TEMPLATE.md",
+    "_templates/FRONT_MATTER.md": "docs/_templates/FRONT_MATTER.md",
 }
 
 def rewrite_links(name: str, content: str) -> str:
@@ -28,7 +28,8 @@ def rewrite_links(name: str, content: str) -> str:
         content = content.replace("./docs/", "")
     return content
 
-for target, source in SOURCES.items():
+for target, source_path in SOURCES.items():
+    source = ROOT / source_path
     text = source.read_text(encoding="utf-8")
     text = rewrite_links(target, text)
     with mkdocs_gen_files.open(target, "w") as dest:
