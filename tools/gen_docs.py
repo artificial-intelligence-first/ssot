@@ -12,9 +12,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCES = {
     "index.md": ROOT / "README.md",
     "AGENTS.md": ROOT / "AGENTS.md",
-    "_templates/TOPIC_TEMPLATE.md": ROOT / "_templates/TOPIC_TEMPLATE.md",
-    "_templates/SECTION_TEMPLATE.md": ROOT / "_templates/SECTION_TEMPLATE.md",
-    "_templates/FRONT_MATTER.md": ROOT / "_templates/FRONT_MATTER.md",
+    "_templates/TOPIC_TEMPLATE.md": ROOT / "docs/_templates/TOPIC_TEMPLATE.md",
+    "_templates/SECTION_TEMPLATE.md": ROOT / "docs/_templates/SECTION_TEMPLATE.md",
+    "_templates/FRONT_MATTER.md": ROOT / "docs/_templates/FRONT_MATTER.md",
 }
 
 def rewrite_links(name: str, content: str) -> str:
@@ -22,6 +22,7 @@ def rewrite_links(name: str, content: str) -> str:
     if name == "index.md":
         content = content.replace("./docs/", "")
         content = content.replace("./_templates/", "_templates/")
+        content = content.replace("docs/_templates/", "_templates/") # Handle the new location link if user wrote it relative to root
         content = content.replace("./LICENSE", "https://github.com/artificial-intelligence-first/ssot/blob/main/LICENSE")
     if name == "AGENTS.md":
         content = content.replace("./docs/", "")
