@@ -721,18 +721,18 @@ These examples are intended as copy-pastable starting points that novice users a
 ## See Also
 
 ### Prerequisites
-- [agents-md] – AI agent README format that complements ExecPlans
-- [markdown-syntax] – Basic Markdown knowledge required for formatting
+- [README_AND_AGENTS.md](./README_AND_AGENTS.md) – AI agent README format that complements ExecPlans
+- [Markdown Guide](https://www.markdownguide.org/) – Basic Markdown knowledge required for formatting
 
 ### Related Topics
-- [task-decomposition] – Strategies for breaking down complex work
-- [context-management] – Managing AI agent context windows effectively
-- [ai-driven-development] – Broader patterns for AI-assisted coding
+- [SSOT.md](./SSOT.md) – Single Source of Truth governance and definitions
+- [AGENT_SKILL.md](./AGENT_SKILL.md) – Agent skill specification for task execution
+- [CODE_MCP.md](./CODE_MCP.md) – Code execution patterns for AI agents
 
 ### Advanced / Platform-specific
-- [codex-optimization] – OpenAI Codex-specific optimizations
-- [multi-agent-coordination] – Coordinating multiple AI agents on one plan
-- [plan-versioning] – Managing ExecPlan evolution over time
+- [OpenAI Cookbook](https://cookbook.openai.com/) – OpenAI-specific optimizations and patterns
+- Multi-Agent Coordination – See "Pattern: Multi-Agent Coordination" in this document
+- Plan Versioning – See "Pattern: Plan Revision Workflow" in this document
 
 ---
 

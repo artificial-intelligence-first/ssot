@@ -1669,8 +1669,9 @@ await analytics.save_report({
 
 ## Update Log
 
+- **2025-11-24** – Fixed Update Log date inconsistencies. (Author: AI-First)
 - **2025-11-22** – Updated based on peer review: added System Prompt Design and Self-Correction Loop patterns, clarified OS-level sandbox requirements, added warm pool and debug replay checklists. (Author: AI-First)
-- **2024-11-19** – Enhanced Sandbox-Based Execution pattern with complete Docker implementation, security profiles, and Python wrapper. Added TypeScript stub generation implementation with full type mapping and CLI tooling. (Author: AI-First)
+- **2025-11-19** – Enhanced Sandbox-Based Execution pattern with complete Docker implementation, security profiles, and Python wrapper. Added TypeScript stub generation implementation with full type mapping and CLI tooling. (Author: AI-First)
 - **2025-11-14** – Added Practical Examples section with document processing and data analysis pipeline examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering Code MCP architecture, implementation patterns, progressive disclosure, sandbox execution, security practices, and cost optimization strategies. (Author: AI-First)
 
@@ -1684,11 +1685,11 @@ await analytics.save_report({
 - [json-schema](https://json-schema.org/) – Required for type generation and validation
 
 ### Related Topics
-- [agent-skill] – Complementary specification for agent skill packaging and distribution
-- [progressive-disclosure] – Context optimization strategies applicable to Code MCP
-- [function-calling-protocols] – Alternative approaches and comparison points
-- [token-optimization] – Broader techniques for reducing context consumption
-- [execution-sandboxing] – Deep dive into sandboxing technologies and configurations
+- [AGENT_SKILL.md](./AGENT_SKILL.md) – Complementary specification for agent skill packaging and distribution
+- [EXEC_PLAN.md](./EXEC_PLAN.md) – Task planning methodology for AI-driven development
+- [SSOT.md](./SSOT.md) – Governance guide for Single Source of Truth
+- [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling) – Alternative approaches and comparison points
+- [gVisor](https://gvisor.dev/) – Deep dive into sandboxing technologies and configurations
 
 ### Advanced / Platform-specific
 - [docker-sandboxing](https://docs.docker.com/) – Docker-based sandbox implementation

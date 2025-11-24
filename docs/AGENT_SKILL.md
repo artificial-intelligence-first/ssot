@@ -1282,7 +1282,7 @@ jobs:
 
 ## Practical Skill Examples
 
-### 19.1 Frontend Development Skills
+### Frontend Development Skills
 
 The **web-artifacts-builder** skill demonstrates how skills can dramatically improve frontend output quality while minimizing context overhead. Key characteristics:
 
@@ -1299,7 +1299,7 @@ Frontend skills should address specific design dimensions:
 
 > Any domain where models produce generic outputs despite having more expansive understanding is a candidate for skill development. Skills enable teams to encode company design systems and component patterns into reusable modules. ([Improving frontend design through skills](https://claude.com/blog/improving-frontend-design-through-skills))
 
-### 19.2 Document Processing Skills
+### Document Processing Skills
 
 Pre-configured skills for document generation (presentations/spreadsheets/documents/PDFs) demonstrate the pattern of combining:
 - Declarative capabilities in `skill.yaml`
@@ -1310,8 +1310,9 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 
 ## Update Log
 
-- **2024-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
+- **2025-11-24** – Fixed Update Log date inconsistencies. (Author: AI-First)
 - **2025-11-22** – Refined specification based on multi-agent review. Added Formal Manifest Schema, Declarative Secrets, Standardized Runtime Protocol, and Host-Mediated Composition patterns. Clarified MCP relationship. (Author: AI-First)
+- **2025-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
 - **2025-11-14** – Added Practical Skill Examples section with frontend and document processing examples. Updated metadata. (Author: AI-First)
 - **2025-11-13** – Initial specification created covering manifest structure, three-layer model, permissions, safety, progressive disclosure, and dual runtime support. (Author: AI-First)
 
@@ -1324,16 +1325,16 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 - [semantic-versioning](https://semver.org/) – Version management principles applied in this specification
 
 ### Related Topics
-- [tool-calling-protocols] – How models invoke tools and interpret results
-- [function-schemas] – Best practices for designing function signatures
-- [progressive-disclosure] – Context optimization strategies for AI systems
-- [execution-sandboxing] – Security models for running untrusted code
-- [context-management] – Techniques for optimizing token usage in AI systems
+- [CODE_MCP.md](./CODE_MCP.md) – Code execution patterns using MCP tools
+- [EXEC_PLAN.md](./EXEC_PLAN.md) – Task planning methodology for AI-driven development
+- [SSOT.md](./SSOT.md) – Governance guide for Single Source of Truth
+- [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling) – How models invoke tools and interpret results
+- [gVisor](https://gvisor.dev/) – Security models for running untrusted code
 
 ### Advanced / Platform-specific
-- [claude-code-skills](https://code.claude.com/docs/en/skills) – Claude Code implementation of this specification
-- [mcp-protocol] – Model Context Protocol as alternative integration approach
-- [langchain-tools] – LangChain's tool abstraction and integration patterns
+- [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills) – Claude Code implementation of this specification
+- [Model Context Protocol](https://modelcontextprotocol.io/) – MCP as alternative integration approach
+- [LangChain Tools](https://python.langchain.com/docs/modules/agents/tools/) – LangChain's tool abstraction and integration patterns
 
 ---
 

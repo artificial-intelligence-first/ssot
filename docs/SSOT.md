@@ -454,12 +454,13 @@ steps:
 ## See Also
 
 ### Prerequisites
-- [documentation-as-code] – Understanding docs as engineering artifacts.
-- [git-flow] – Managing version control for documentation.
+- [Documentation as Code](https://www.writethedocs.org/guide/docs-as-code/) – Understanding docs as engineering artifacts
+- [Git Branching Model](https://nvie.com/posts/a-successful-git-branching-model/) – Managing version control for documentation
 
 ### Related Topics
-- [README_AND_AGENTS.md](./README_AND_AGENTS.md) – How SSOT supports the agent ecosystem.
-- [CODE_MCP.md](./CODE_MCP.md) – Implementing SSOT schemas in code.
+- [README_AND_AGENTS.md](./README_AND_AGENTS.md) – How SSOT supports the agent ecosystem
+- [CODE_MCP.md](./CODE_MCP.md) – Implementing SSOT schemas in code
+- [EXEC_PLAN.md](./EXEC_PLAN.md) – Task planning methodology using SSOT definitions
 
 ---
 

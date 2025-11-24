@@ -1,15 +1,18 @@
 site_name: AI-First SSOT
-site_description: Single Source of Truth for AI-first development
+site_description: Single Source of Truth for AI-first development - Vendor-neutral specifications for AI agents and developers
 site_url: https://artificial-intelligence-first.github.io/ssot/
 repo_name: artificial-intelligence-first/ssot
 repo_url: https://github.com/artificial-intelligence-first/ssot
-edit_uri: ""
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2025 AI-First Development Team
 
 docs_dir: docs
 
 theme:
   name: material
   language: en
+  logo: https://raw.githubusercontent.com/material-icons/material-icons/refs/heads/master/svg/psychology_alt/baseline.svg
+  favicon: https://raw.githubusercontent.com/material-icons/material-icons/refs/heads/master/svg/psychology_alt/baseline.svg
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -17,49 +20,101 @@ theme:
     - navigation.tracking
     - navigation.sections
     - navigation.expand
-    - toc.integrate
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - toc.follow
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
     - search.suggest
     - search.highlight
+    - search.share
+    - announce.dismiss
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: teal
-      accent: indigo
+      primary: indigo
+      accent: deep purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: teal
-      accent: indigo
+      primary: indigo
+      accent: deep purple
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
 
 markdown_extensions:
   - admonition
+  - abbr
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
   - toc:
       permalink: true
-  - footnotes
-  - tables
-  - attr_list
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+      auto_title: true
   - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.tilde
   - pymdownx.emoji:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
       emoji_index: !!python/name:material.extensions.emoji.twemoji
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/artificial-intelligence-first/ssot
+      name: SSOT on GitHub
+  generator: false
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
 
 extra_css:
   - overrides/extra.css
@@ -68,18 +123,22 @@ plugins:
   - gen-files:
       scripts:
         - tools/gen_docs.py
-  - search
+  - search:
+      lang: en
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
 
 nav:
   - Home: index.md
-  - Agents Catalog: AGENTS.md
-  - Core Guides:
-      - SSOT Governance Guide: SSOT.md
+  - Getting Started:
+      - Overview: SSOT.md
+      - Agent Catalog: AGENTS.md
+  - Specifications:
+      - Agent Skill: AGENT_SKILL.md
+      - ExecPlan: EXEC_PLAN.md
+      - TypeScript Standard: TYPESCRIPT_STANDARD.md
+  - Guides:
+      - Code MCP: CODE_MCP.md
       - README & AGENTS Patterns: README_AND_AGENTS.md
-      - Agent Skill Specification: AGENT_SKILL.md
-      - Code MCP Guide: CODE_MCP.md
-      - Exec Plan Methodology: EXEC_PLAN.md
-      - TypeScript Standard Set: TYPESCRIPT_STANDARD.md
   - Templates:
       - Topic Template: _templates/TOPIC_TEMPLATE.md
       - Section Template: _templates/SECTION_TEMPLATE.md

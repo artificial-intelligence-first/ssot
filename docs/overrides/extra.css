@@ -1,28 +1,212 @@
-/* Subtle typography improvements */
+/* ==========================================================================
+   AI-First SSOT - Custom Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+
 .md-typeset h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
+  margin-bottom: 0.8em;
 }
 
 .md-typeset h2 {
   font-weight: 600;
   letter-spacing: -0.01em;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.3em;
+  margin-top: 1.5em;
 }
 
-/* Adjust code block border radius */
+.md-typeset h3 {
+  font-weight: 600;
+}
+
+/* Hero styling for homepage */
+.md-content__inner > h1:first-child {
+  font-size: 2.5em;
+  margin-bottom: 0.5em;
+  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --------------------------------------------------------------------------
+   Code Blocks
+   -------------------------------------------------------------------------- */
+
 .md-typeset pre > code {
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
-/* Slight adjustment to navigation spacing */
+.md-typeset code {
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+
+/* Code block title styling */
+.md-typeset .highlight > .filename {
+  background-color: var(--md-code-bg-color);
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px 8px 0 0;
+  font-size: 0.75em;
+  font-weight: 600;
+  padding: 0.5em 1em;
+}
+
+/* --------------------------------------------------------------------------
+   Navigation
+   -------------------------------------------------------------------------- */
+
 .md-nav__item {
   padding-top: 2px;
   padding-bottom: 2px;
 }
 
-/* Hero-like styling for the first H1 on the homepage */
-.md-content__inner > h1:first-child {
-  margin-bottom: 1.5em;
-  color: var(--md-primary-fg-color);
+/* Active tab styling */
+.md-tabs__link--active {
+  font-weight: 600;
 }
 
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+
+.md-typeset table:not([class]) {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+.md-typeset table:not([class]) td {
+  border-color: var(--md-default-fg-color--lightest);
+}
+
+/* --------------------------------------------------------------------------
+   Admonitions
+   -------------------------------------------------------------------------- */
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Cards & Content Blocks
+   -------------------------------------------------------------------------- */
+
+/* Agent Contract section styling */
+.md-typeset h2:has(+ ul > li > strong:first-child) + ul {
+  background: var(--md-code-bg-color);
+  border-radius: 8px;
+  padding: 1em 1.5em;
+  border-left: 4px solid var(--md-primary-fg-color);
+}
+
+/* TL;DR section styling */
+.md-typeset h2:contains("TL;DR") + ul,
+.md-typeset h2#tldr + ul {
+  background: linear-gradient(135deg,
+    rgba(var(--md-primary-fg-color--rgb), 0.05),
+    rgba(var(--md-accent-fg-color--rgb), 0.05)
+  );
+  border-radius: 8px;
+  padding: 1em 1.5em;
+}
+
+/* --------------------------------------------------------------------------
+   Checklist Styling
+   -------------------------------------------------------------------------- */
+
+.md-typeset .task-list-item {
+  padding-left: 0.5em;
+}
+
+.md-typeset .task-list-control [type="checkbox"] {
+  height: 1.2em;
+  width: 1.2em;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.md-footer {
+  margin-top: 2em;
+}
+
+.md-footer-meta {
+  background-color: var(--md-default-bg-color);
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbar (for webkit browsers)
+   -------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-default-fg-color--lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-default-fg-color--light);
+}
+
+/* --------------------------------------------------------------------------
+   Print Styles
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .md-typeset h2 {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .md-typeset table:not([class]) th {
+    background-color: #f5f5f5;
+    color: #333;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Adjustments
+   -------------------------------------------------------------------------- */
+
+@media screen and (max-width: 76.1875em) {
+  .md-content__inner > h1:first-child {
+    font-size: 2em;
+  }
+}
+
+@media screen and (max-width: 44.9375em) {
+  .md-content__inner > h1:first-child {
+    font-size: 1.6em;
+  }
+}
