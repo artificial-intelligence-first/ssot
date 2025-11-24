@@ -169,7 +169,7 @@ pnpm agents:run # Run local agent orchestration
 ## Documentation
 - [AGENTS.md](./AGENTS.md) - Agent catalog and specifications
 - [SSOT.md](./SSOT.md) - Single source of truth topics
-- [PLAN.md](./PLAN.md) - Project roadmap and planning
+- `PLAN.md` - Project roadmap and planning (per-repository execution plan document; see `docs/EXEC_PLAN.md` in this repository for the canonical ExecPlan specification)
 
 ## License
 MIT
