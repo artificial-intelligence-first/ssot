@@ -176,10 +176,10 @@ When agents have overlapping concerns:
 
 | Resource | Description |
 |:---------|:------------|
-| [README.md](./README.md) | Repository overview and human setup instructions |
-| [docs/SSOT.md](./docs/SSOT.md) | Governance guide and canonical definitions |
-| [docs/AGENT_SKILL.md](./docs/AGENT_SKILL.md) | Agent skill specification |
-| [docs/EXEC_PLAN.md](./docs/EXEC_PLAN.md) | Task planning methodology |
+| [Home](./index.md) | Repository overview and human setup instructions |
+| [SSOT.md](./SSOT.md) | Governance guide and canonical definitions |
+| [AGENT_SKILL.md](./AGENT_SKILL.md) | Agent skill specification |
+| [EXEC_PLAN.md](./EXEC_PLAN.md) | Task planning methodology |
 
 ---
 
