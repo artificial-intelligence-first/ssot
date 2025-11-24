@@ -31,6 +31,8 @@ ssot/
 │   ├── AGENT_SKILL.md          # Agent Skill All Model specification
 │   ├── CODE_MCP.md             # Code MCP implementation guide
 │   ├── EXEC_PLAN.md            # ExecPlan methodology documentation
+│   ├── SSOT.md                 # SSOT governance guide
+│   ├── TYPESCRIPT_STANDARD.md  # TypeScript configuration standards
 │   └── README_AND_AGENTS.md   # Repository documentation patterns
 │
 ├── _templates/                  # Document templates
@@ -123,6 +125,7 @@ Follow the structured templates in `_templates/SECTION_TEMPLATE.md` for consiste
 | [AGENT_SKILL.md](./docs/AGENT_SKILL.md) | Agent Skill All Model specification | Stable |
 | [CODE_MCP.md](./docs/CODE_MCP.md) | Model Context Protocol implementation | Stable |
 | [EXEC_PLAN.md](./docs/EXEC_PLAN.md) | ExecPlan methodology and patterns | Stable |
+| [TYPESCRIPT_STANDARD.md](./docs/TYPESCRIPT_STANDARD.md) | TypeScript configuration standard set | Stable |
 | [SSOT.md](./docs/SSOT.md) | Single Source of Truth governance guide | Stable |
 | [README_AND_AGENTS.md](./docs/README_AND_AGENTS.md) | Documentation architecture patterns | Stable |
 
@@ -179,4 +182,4 @@ MIT License - See [LICENSE](./LICENSE) for full terms.
 
 **Repository**: [github.com/artificial-intelligence-first/ssot](https://github.com/artificial-intelligence-first/ssot)
 **Maintained by**: AI-First Development Team
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-24

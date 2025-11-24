@@ -1,14 +1,5 @@
 # Agents Catalog
 
-## Primary Directive
-- Think in **English** for analysis, planning, and all technical artifacts.
-- Interact with the user in **Japanese**, unless the user explicitly requests English.
-- When creating any text that will be used in Git or GitHub (branches, commits, PRs, issues, docs, comments), always write in **English**, even if the user spoke in Japanese.
-- Use **English** for all code, docs, commits, and GitHub actions.
-- Never include rhetorical questions or reflective prompts at the end of responses.
-- Do not make the code unnecessarily complex or bloated during implementation.
-- Continuously clean up technical debt, outdated logic, and unnecessary descriptions.
-
 ## Scope
 Complete inventory of autonomous agents operating across this repository.
 
