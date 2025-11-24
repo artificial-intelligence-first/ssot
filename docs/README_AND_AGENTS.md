@@ -61,7 +61,7 @@ last_updated: 2025-11-22
   - Technical stack and prerequisites
   - Installation and quick start procedures
   - High-level directory structure explanation
-  - Links to specialized documentation (AGENTS.md, SSOT.md, PLANS.md)
+  - Links to specialized documentation (AGENTS.md, SSOT.md, PLAN.md)
 - **Excludes**:
   - Detailed API specifications (belongs in dedicated docs)
   - Agent-specific operational instructions (belongs in AGENTS.md)
@@ -169,7 +169,7 @@ pnpm agents:run # Run local agent orchestration
 ## Documentation
 - [AGENTS.md](./AGENTS.md) - Agent catalog and specifications
 - [SSOT.md](./SSOT.md) - Single source of truth topics
-- [PLANS.md](./PLANS.md) - Project roadmap and planning
+- [PLAN.md](./PLAN.md) - Project roadmap and planning
 
 ## License
 MIT

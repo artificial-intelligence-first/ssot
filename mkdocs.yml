@@ -78,7 +78,7 @@ nav:
       - README & AGENTS Patterns: README_AND_AGENTS.md
       - Agent Skill Specification: AGENT_SKILL.md
       - Code MCP Guide: CODE_MCP.md
-      - Exec Plan Methodology: PLANS.md
+      - Exec Plan Methodology: EXEC_PLAN.md
   - Templates:
       - Topic Template: _templates/TOPIC_TEMPLATE.md
       - Section Template: _templates/SECTION_TEMPLATE.md

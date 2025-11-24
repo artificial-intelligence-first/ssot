@@ -4,7 +4,7 @@ slug: agent-skill
 summary: "Skill spec overview"
 type: spec
 tags: [topic, ai-first, agent, skill, specification]
-last_updated: 2025-11-22
+last_updated: 2025-11-24
 ---
 
 # Topic: Agent Skill All Model - Universal Specification
@@ -34,6 +34,8 @@ last_updated: 2025-11-22
   - execution-environments
   - progressive-disclosure
   - context-management
+
+Within this repository, responsibilities for applying this specification in practice are assigned to the `repo-orchestrator` and `doc-maintainer` agents described in `AGENTS.md`.
 
 ---
 

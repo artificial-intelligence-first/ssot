@@ -4,7 +4,7 @@ slug: code-mcp
 summary: "Code MCP guide"
 type: reference
 tags: [topic, ai-first, agent, mcp, code, optimization]
-last_updated: 2025-11-22
+last_updated: 2025-11-24
 ---
 
 # Topic: Code MCP — Model-Agnostic Code Execution MCP Implementation Guide
@@ -37,6 +37,8 @@ last_updated: 2025-11-22
   - progressive-disclosure
   - sandbox-execution
   - token-optimization
+
+In this repository, recommended agents for applying this specification (such as `repo-orchestrator` and `doc-maintainer`) are defined in `AGENTS.md`.
 
 ---
 

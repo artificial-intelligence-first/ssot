@@ -9,7 +9,7 @@ last_updated: YYYY-MM-DD
 
 ## Usage Rules
 
-- Apply this front matter to every "official document" (AGENTS, SSOT, PLANS, SKILL, specs, designs, procedures, AI reference topics, etc.).
+- Apply this front matter to every "official document" (AGENTS, SSOT, PLAN, SKILL, specs, designs, procedures, AI reference topics, etc.).
 - Every md under `/docs` or `/knowledge` must include it; `/drafts`, `/notes`, `/scratch`, and similar work logs are exempt.
 - The repository root `README.md` is the lone exception even if it is official.
 - Skip it for transient notes or drafts where title/slug/tags/summary would be meaningless noise.

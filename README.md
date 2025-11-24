@@ -30,7 +30,7 @@ ssot/
 ├── docs/                        # Core documentation
 │   ├── AGENT_SKILL.md          # Agent Skill All Model specification
 │   ├── CODE_MCP.md             # Code MCP implementation guide
-│   ├── PLANS.md                # ExecPlan methodology documentation
+│   ├── EXEC_PLAN.md            # ExecPlan methodology documentation
 │   └── README_AND_AGENTS.md   # Repository documentation patterns
 │
 ├── _templates/                  # Document templates
@@ -122,7 +122,7 @@ Follow the structured templates in `_templates/SECTION_TEMPLATE.md` for consiste
 |----------|---------|--------|
 | [AGENT_SKILL.md](./docs/AGENT_SKILL.md) | Agent Skill All Model specification | Stable |
 | [CODE_MCP.md](./docs/CODE_MCP.md) | Model Context Protocol implementation | Stable |
-| [PLANS.md](./docs/PLANS.md) | ExecPlan methodology and patterns | Stable |
+| [EXEC_PLAN.md](./docs/EXEC_PLAN.md) | ExecPlan methodology and patterns | Stable |
 | [SSOT.md](./docs/SSOT.md) | Single Source of Truth governance guide | Stable |
 | [README_AND_AGENTS.md](./docs/README_AND_AGENTS.md) | Documentation architecture patterns | Stable |
 

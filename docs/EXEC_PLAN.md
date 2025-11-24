@@ -1,13 +1,13 @@
 ---
-title: ExecPlan and PLANS.md
+title: ExecPlan and PLAN.md
 slug: exec-plan
 summary: "AI-driven task management"
 type: spec
 tags: [topic, ai-first, agent, planning, execution, all-model]
-last_updated: 2025-11-22
+last_updated: 2025-11-24
 ---
 
-# Topic: ExecPlan and PLANS.md — Model-Agnostic Execution Planning for AI-Driven Development
+# Topic: ExecPlan and PLAN.md — Model-Agnostic Execution Planning for AI-Driven Development
 
 ## Agent Contract
 
@@ -27,13 +27,15 @@ last_updated: 2025-11-22
   - Real-time collaborative editing where multiple humans are actively working
 - **PRIORITY**:
   - ExecPlan methodology takes precedence over ad-hoc task management when working with AI agents
-  - Self-containment requirement overrides external documentation references
+  - For execution, the self-containment requirement overrides external documentation references, while long-lived definitions and schemas remain mastered in the project root `SSOT.md`
   - Living document updates are mandatory, not optional
 - **RELATED_TOPICS**:
   - agents-md
   - task-decomposition
   - context-management
   - ai-driven-development
+
+In this repository, agents that apply this specification in practice (for example `repo-orchestrator` and `doc-maintainer`) are defined in `AGENTS.md`.
 
 ---
 
@@ -42,7 +44,7 @@ last_updated: 2025-11-22
 - **WHAT**: ExecPlan is a structured Markdown-based methodology for managing multi-hour AI-driven development tasks through living documents that agents continuously update
 - **WHY**: Enables AI agents to maintain context, track progress, and autonomously complete complex tasks without losing state across sessions or context windows
 - **WHEN**: Use for any development task requiring >30 minutes of AI agent work, complex features, significant refactors, or multi-step implementations
-- **HOW**: Create a PLANS.md file following the **Standard ExecPlan Schema** (MUST), including Safety Constraints, and maintain it as work progresses.
+- **HOW**: Create a PLAN.md file based on the **Standard ExecPlan Schema** (sections marked as MUST are required for full compliance), including Safety Constraints, and maintain it as work progresses.
 - **WATCH_OUT**: Never rely on external documentation links for execution; all necessary knowledge must be embedded. Ensure strict adherence to ISO 8601 timestamps.
 
 ---
@@ -171,6 +173,13 @@ Technical terms:
 
 **Sources**: [R1]
 
+### Relationship to SSOT
+
+ExecPlans are self-contained specifications for individual tasks, while the project root `SSOT.md` remains the canonical source for long-lived definitions, schemas, and policies. When an ExecPlan needs those definitions:
+- It MAY embed only the parts required for the task as a local snapshot, but SHOULD always include a link back to the canonical section in `SSOT.md`.
+- In case of any discrepancy between an embedded snapshot and `SSOT.md`, the SSOT definition is authoritative and the ExecPlan MUST be updated to match.
+- If an ExecPlan reveals a missing or ambiguous definition in `SSOT.md`, treat this as a specification gap and propose an update to `SSOT.md` alongside plan changes.
+
 ---
 
 ## Core Patterns
@@ -183,7 +192,7 @@ Technical terms:
 
 **Implementation**:
 
-All ExecPlans **MUST** adhere to the following schema structure.
+ExecPlans that claim compliance with this specification **MUST** include all sections marked `(MUST)` in the following schema structure. Other sections are strongly recommended (`SHOULD`). Normative terms (MUST/SHOULD/MAY) follow the definitions in `docs/SSOT.md`.
 
 ```markdown
 # ExecPlan: <Feature Name>
@@ -251,10 +260,10 @@ All ExecPlans **MUST** adhere to the following schema structure.
 # Phase 1: Plan Only (Session 1)
 User: "I need to implement real-time notifications. Create a detailed ExecPlan
        but write no code yet."
-Agent: [Creates comprehensive PLANS.md with all sections]
+Agent: [Creates comprehensive PLAN.md with all sections]
 
 # Phase 2: Implementation (Session 2 - Fresh Context)
-User: "Execute the plan in ./plans/notifications-PLANS.md"
+User: "Execute the plan in ./plans/notifications-PLAN.md"
 Agent: [Reads plan, implements systematically, updates Progress section]
 
 # Phase 3: Verify & Refactor (Session 3 - Fresh Context)
@@ -331,7 +340,7 @@ Scope: Set up Socket.io for real-time connections
 ## Agent Coordination Protocol
 
 ### Agent Roles and Responsibilities
-- **Lead Agent**: Maintains PLANS.md, coordinates milestones
+- **Lead Agent**: Maintains PLAN.md, coordinates milestones
 - **Frontend Agent**: UI components, styling, user interactions
 - **Backend Agent**: API endpoints, business logic, data processing
 - **Database Agent**: Schema design, migrations, query optimization
@@ -687,7 +696,7 @@ This document's OAuth2 authentication example in the Canonical Definitions secti
 
 ### Example: Multi-Agent ExecPlan
 
-The Multi-Agent Coordination pattern demonstrates how to structure PLANS.md when multiple specialized agents (frontend, backend, database, testing) collaborate. Treat the Lead Agent as the sole maintainer of PLANS.md while specialists update only their dedicated sections (Progress, Surprises, Decision Log) via clearly labeled messages.
+The Multi-Agent Coordination pattern demonstrates how to structure PLAN.md when multiple specialized agents (frontend, backend, database, testing) collaborate. Treat the Lead Agent as the sole maintainer of PLAN.md while specialists update only their dedicated sections (Progress, Surprises, Decision Log) via clearly labeled messages.
 
 ### Example: Plan Revision in Practice
 
@@ -733,6 +742,6 @@ These examples are intended as copy-pastable starting points that novice users a
 
 ---
 
-**Document ID**: `docs/PLANS.md`
-**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/PLANS.md`
+**Document ID**: `docs/EXEC_PLAN.md`
+**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/EXEC_PLAN.md`
 **License**: MIT

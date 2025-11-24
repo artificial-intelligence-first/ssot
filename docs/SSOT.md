@@ -4,7 +4,7 @@ slug: ssot-guide
 summary: "SSOT principles and implementation guide"
 type: guide
 tags: [topic, ai-first, ssot, governance, documentation]
-last_updated: 2025-11-22
+last_updated: 2025-11-24
 ---
 
 # Topic: Single Source of Truth (SSOT) — Architecture and Governance
@@ -24,7 +24,7 @@ last_updated: 2025-11-22
   - Verifying system behavior against specified requirements
 - **DO_NOT_USE_WHEN**:
   - Documenting implementation details that belong in code comments
-  - Tracking temporary tasks (use `PLANS.md`)
+  - Tracking temporary tasks (use `PLAN.md`)
   - Recording historical changes (use `CHANGELOG.md`)
   - Writing tutorials or how-to guides (use dedicated `docs/` files)
 - **PRIORITY**:
@@ -148,6 +148,16 @@ For API usage, see [SSOT.md](./SSOT.md#api-endpoints). (Reference)
 - **Contrast**: Waterfall documentation, Archived specs
 
 **Sources**: [R3]
+
+### Normative Keywords
+
+**Definition**: Standardized meanings for requirement levels used across all SSOT-governed documents in this repository.
+
+- **MUST / MUST NOT**: Non-negotiable requirements for repositories that claim full compliance with this specification. Deviations are permitted only with explicit justification recorded in the project's root `SSOT.md` (or equivalent) and, when relevant, linked migration guidance.
+- **SHOULD / SHOULD NOT**: Strong recommendations. Teams MAY diverge if they document the rationale and expected impact in their project `SSOT.md` or relevant `PLAN.md`.
+- **MAY**: Optional behavior with no direct compliance impact.
+
+These terms are used consistently in companion guides such as `docs/EXEC_PLAN.md`, `docs/README_AND_AGENTS.md`, and language-specific standards.
 
 ### [Template] Project Canonical Glossary
 
@@ -464,4 +474,3 @@ steps:
 **Document ID**: `docs/SSOT.md`
 **Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/SSOT.md`
 **License**: MIT
-
