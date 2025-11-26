@@ -23,6 +23,7 @@ theme:
     - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
+    - toc.integrate
     - toc.follow
     - content.code.copy
     - content.code.annotate
