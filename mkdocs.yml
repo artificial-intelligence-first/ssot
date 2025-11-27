@@ -11,8 +11,6 @@ docs_dir: docs
 theme:
   name: material
   language: en
-  logo: https://raw.githubusercontent.com/material-icons/material-icons/refs/heads/master/svg/psychology_alt/baseline.svg
-  favicon: https://raw.githubusercontent.com/material-icons/material-icons/refs/heads/master/svg/psychology_alt/baseline.svg
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -35,15 +33,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: deep purple
+      primary: custom
+      accent: blue
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: custom
+      accent: grey
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -75,7 +73,7 @@ markdown_extensions:
   - md_in_html
   - tables
   - toc:
-      permalink: true
+      permalink: ""
       toc_depth: 3
   - pymdownx.arithmatex:
       generic: true
@@ -140,6 +138,7 @@ nav:
   - Guides:
       - Code MCP: CODE_MCP.md
       - README & AGENTS Patterns: README_AND_AGENTS.md
+      - EPISCR Writing: EPISCR_WRITING.md
   - Templates:
       - Topic Template: _templates/TOPIC_TEMPLATE.md
       - Section Template: _templates/SECTION_TEMPLATE.md

@@ -1,16 +1,12 @@
 # AI-First SSOT
 
-<div align="center">
-
 **Single Source of Truth for AI-First Development**
 
-*A centralized repository managing structured knowledge documents optimized for both AI agents and human developers*
+A centralized repository managing structured knowledge documents optimized for both AI agents and human developers.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://artificial-intelligence-first.github.io/ssot/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-
-</div>
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/artificial-intelligence-first/ssot/pulls)
 
 ---
 
@@ -197,10 +193,4 @@ MIT License - See [LICENSE](./LICENSE) for full terms.
 
 ---
 
-<div align="center">
-
-**Maintained by**: AI-First Development Team
-
-**Last Updated**: 2025-11-25
-
-</div>
+**Maintained by**: AI-First Development Team | **Last Updated**: 2025-11-25
