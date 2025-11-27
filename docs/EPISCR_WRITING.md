@@ -4,10 +4,53 @@ slug: episcr-writing
 summary: "Emotional narrative framework for SNS/blogs"
 type: spec
 tags: [topic, ai-first, writing, narrative, emotional, copywriting]
+version: 1.1.0
 last_updated: 2025-11-27
 ---
 
 # Topic: EPISCR Writing Framework
+
+> **Pronunciation**: EPISCR = "eh-PIS-kur" (rhymes with "whisker")
+>
+> **One-line Definition**: A "gentle transformation" writing framework centered on Insight + Reflection
+
+---
+
+## Quick Start (EPISCR Lite)
+
+**Understand EPISCR in 3 minutes**
+
+### Six-Stage Overview
+
+| Stage | Name | One-liner | Target % |
+|:-----:|:-----|:---------|:--------:|
+| **E** | Emotion | Paint feelings through concrete scenes | 10-15% |
+| **P** | Problem | Articulate the struggle in relatable terms | 15-20% |
+| **I** | Insight | Deliver a perspective-shifting reframe | 20-25% |
+| **S** | Solution | Propose small, actionable steps for today | 20-25% |
+| **C** | Close | Return to opening, show transformation | 10-15% |
+| **R** | Reflection | Hand the baton to the reader with questions | 5-10% |
+
+### Core Rules
+
+1. **One article = one insight** — Depth beats breadth
+2. **"We" over "You"** — Solidarity, not lecturing
+3. **Micro-actions only** — Achievable in under 2 minutes
+
+### Minimal Template
+
+```
+[E] A specific scene (1-3 lines)
+[P] The shared struggle beneath it (2-4 lines)
+[I] The reframe: "It's not X, it's actually Y" (2-5 lines)
+[S] A small action doable today (1-3 lines)
+[C] Callback to opening, showing change (1-3 lines)
+[R] A question for the reader (1 line)
+```
+
+> **Want more detail?** See the sections below for patterns, anti-patterns, and full templates.
+
+---
 
 ## Agent Contract
 
@@ -65,13 +108,7 @@ last_updated: 2025-11-27
 | **R** | Reflection | Open questions returning agency to reader |
 
 **Scope**:
-- **Includes**:
-  - E (Emotion): Visceral opening hook using concrete imagery
-  - P (Problem): Clear articulation of shared struggle
-  - I (Insight): Reframing perspective or structural understanding
-  - S (Solution): Small, achievable action steps
-  - C (Close): Narrative resolution with emotional landing
-  - R (Reflection): Open questions returning agency to reader
+- **Includes**: The six stages defined in "Full Name Expansion" above, executed in sequence E→P→I→S→C→R
 - **Excludes**:
   - Technical specifications or procedural instructions
   - Hard-sell persuasion or conversion-focused copy
@@ -86,12 +123,12 @@ last_updated: 2025-11-27
 **Example**:
 
 ```text
-[E] 深夜2時、スマホを握りながら誰にもメッセージを送れずにいた。
-[P] 孤独がつらいのは「誰にも必要とされていない」という不安が一緒に来るから。
-[I] でも孤独を感じること自体は、「つながりたい」という健全なサインかもしれない。
-[S] 毎日一つだけ「小さなつながり」を作ってみる—店員さんにお礼を言う、SNSで誰かを褒める。
-[C] 世界の輪郭が少しずつ戻ってきた。完全ではないけれど、自分で「ひとりじゃない瞬間」を作れるようになった。
-[R] あなたが今日作れそうな「小さなつながり」は何だろう?
+[E] 2 AM, phone in hand, unable to think of anyone to message.
+[P] The cruelest part of loneliness is the whisper: "No one needs you."
+[I] But feeling lonely might actually be a healthy signal—your need for connection is working.
+[S] Create one small connection per day: thank a cashier with eye contact, leave a kind comment.
+[C] The world's edges came back into focus. Not perfect, but I learned to create "not alone" moments myself.
+[R] What small connection could you create today?
 ```
 
 **Sources**: [R1], [R2], [R3]
@@ -289,6 +326,82 @@ ourselves from uncomfortable feelings.
 
 ---
 
+### Insight Discovery Methods
+
+> **Note**: Insight (I) is the heart of EPISCR and the hardest part to write. Use these methods to excavate your "aha moment."
+
+#### Method 1: 5 Whys
+
+Drill down five levels of "why?" on an emotional theme.
+
+```
+Theme: Procrastination
+Why 1: Why do I procrastinate? → I'm scared to start
+Why 2: Why am I scared to start? → I might fail
+Why 3: Why does failure scare me? → It proves I'm not good enough
+Why 4: Why does that matter? → My self-worth feels threatened
+Why 5: Why is my self-worth tied to this? → I measure myself by outcomes
+
+→ Insight: Procrastination isn't laziness—it's a defense mechanism protecting self-worth
+```
+
+#### Method 2: Polarity Flip
+
+Ask: "What if this 'bad' thing is actually functional or a signal?"
+
+```
+Default view: Loneliness = lack of social skills, a problem
+Flipped: Loneliness = a healthy signal that your need for connection is working
+
+Default view: Perfectionism = having high standards
+Flipped: Perfectionism = fear-based defense mechanism
+
+Default view: Anger = negative emotion to control
+Flipped: Anger = alarm that a boundary has been crossed
+```
+
+#### Method 3: Systemic Zoom-Out
+
+Ask: "What if this isn't a personal flaw but a structural/environmental issue?"
+
+```
+Personal level: "Why can't I make friends?"
+Structural level: "Adults lack 'repeated unplanned interactions.'
+                  In school, you were trapped in the same room daily—
+                  friendships happened automatically.
+                  Adults must intentionally recreate those conditions."
+
+Personal level: "Why can't I focus?"
+Structural level: "Modern environments are designed to capture attention.
+                  Inability to focus isn't weak willpower—
+                  it's a mismatch with the environment."
+```
+
+#### Method 4: Reader Voice Mining
+
+Extract insight seeds from comments, DMs, and reviews where readers are trying to articulate something.
+
+```
+Comment patterns to watch:
+- "I get it, but something feels different for me..."
+- "In my case, it was actually..."
+- "So basically what you're saying is...?"
+
+→ Readers unconsciously articulate the insight you should make explicit
+```
+
+#### Insight Strength Levels
+
+| Level | Type | Example | Effect |
+|:-----:|:-----|:--------|:-------|
+| Lv1 | Perspective Shift | Loneliness isn't "failure"—it's a "signal" | Provides awareness |
+| Lv2 | Paradigm Shift | Perfectionism = not "high standards" but "fear-based defense" | Changes understanding |
+| Lv3 | Identity Shift | See yourself as "someone who writes" not "a writer" | Changes self-concept |
+
+> **Principle**: One article = one insight. However, for multi-layered themes, **up to two insights** may be acceptable (e.g., Lv1 opens the door, Lv2 deepens it).
+
+---
+
 ### Pattern: Micro-Action Solutions
 
 **Intent**: Translate insights into immediately actionable behaviors with minimal friction, addressing both motivation and ability barriers.
@@ -339,6 +452,55 @@ If your audience includes experienced readers who might find micro-actions too b
 > "If you want to go further: [resource/book/method]. But start with the small step first."
 
 **Sources**: [R3], [R4]
+
+---
+
+### Solution Levels
+
+> **Core principle**: Only Level 0 is required. Level 1/2 are optional based on audience needs.
+
+| Level | Name | Timeframe | Audience | Required? |
+|:-----:|:-----|:----------|:---------|:---------:|
+| **Level 0** | Micro-Action | 30 sec - 2 min | Everyone | **Required** |
+| **Level 1** | Continuation | 1 week - 1 month | Those wanting to build habits | Optional |
+| **Level 2** | Deep Challenge | Life-shift level | Those committed to real change | Optional |
+
+#### Usage Guide
+
+```markdown
+## Level 0 (Required) - Include in every article
+"Something small you can do today"
+Example: Look the cashier in the eyes and say "thank you"
+
+## Level 1 (Optional) - For readers wanting to build habits
+"Something to try for a week"
+Example: Each morning, write down one thing you're grateful for
+
+## Level 2 (Optional) - For readers committed to transformation
+"A life-changing challenge"
+Example: For 3 months, create one opportunity per week to talk with a stranger
+```
+
+#### Example (Loneliness Theme)
+
+```markdown
+[S - Solution]
+
+**Today's Action (Level 0)**
+Look the cashier in the eyes and say "thank you." Three seconds.
+But that's proof you chose to engage with the world.
+
+**One-Week Challenge (Level 1)** - For those who want to try more
+Send one text per day: "Thanks for helping me with [specific thing]."
+Don't expect a reply. Sending itself is the medicine.
+
+**For Those Ready to Transform (Level 2)**
+Go to the same coffee shop, same seat, once a week.
+In two months, you'll be a "regular."
+Regulars naturally start talking to each other.
+```
+
+> **Note**: For B2B or advanced audiences, actively use Level 1/2. For general SNS posts, Level 0 alone is sufficient.
 
 ---
 
@@ -452,6 +614,51 @@ a message—sometimes sharing the intention makes it more real.
 
 ---
 
+### Reflection Levels
+
+> **Core principle**: Default to R1; add R2/R3 based on platform and community. Comment invitations are **optional, not required**.
+
+| Level | Purpose | Characteristics | Best Platforms |
+|:-----:|:--------|:----------------|:---------------|
+| **R1** | Introspection | Questions readers answer in their minds | Blogs, personal essays |
+| **R2** | Dialogue | Questions designed to encourage comments | SNS, Medium, communities |
+| **R3** | Deep Dive | Questions that draw out authentic sharing | Courses, Slack, paid communities |
+
+#### Examples by Level (Loneliness Theme)
+
+```markdown
+## R1: Introspection (Default)
+If loneliness is a "signal," what might it be trying to tell you right now?
+(No need to comment—just reflect on this for yourself.)
+
+## R2: Dialogue-Oriented (Open SNS)
+What's one small connection you could create today?
+If you'd like, share it in the comments.
+Declaring it out loud makes it easier to follow through.
+
+## R3: Deep Dive (Closed Communities)
+When you feel lonely, what happens inside you?
+The physical sensations, the words that surface, the behaviors you want to avoid.
+This is a safe space. Would you like to put it into words?
+```
+
+#### Balancing Comment Invitations
+
+- **Some readers are turned off by "please comment!" vibes** — Don't force it, especially in R1-style introspective pieces
+- **Use comment quality as an evaluation metric** — "Just empathy" vs. "sharing their own story" indicates Reflection effectiveness
+
+```markdown
+# ❌ Pushy comment invitation
+Tell me about your experience in the comments!
+Let's all share together!
+
+# ✅ Natural comment invitation
+If something here resonated, I'd love to hear about it.
+Sometimes sharing "this is how it was for me" becomes encouragement for someone else.
+```
+
+---
+
 ## Decision Checklist
 
 - [ ] **Emotion section uses concrete imagery**: No abstract statements in opening [R9]
@@ -516,6 +723,68 @@ EPISCR often addresses emotionally sensitive topics. Observe these boundaries:
 2. **Avoid diagnostic language**: Don't tell readers they "have" a condition or "need" treatment
 3. **Present solutions as personal experiments**, not prescriptions: "This worked for me" not "This will fix you"
 4. **Recognize limits**: Some topics require professional treatment, not a blog post
+
+### Prohibited Topics
+
+The following content is outside EPISCR's scope and must never be included in articles:
+
+| Category | Examples | Reason |
+|:---------|:---------|:-------|
+| **Self-harm/suicide methods** | Specific methods, tools, locations | Imitation risk |
+| **Suicide plan details** | Timing, steps, note contents | Requires crisis intervention |
+| **Violence against others** | Specific assault methods, weapons | Crime facilitation risk |
+| **Eating disorder behaviors** | Purging methods, extreme restriction details | Imitation risk |
+| **Illegal drug usage** | Sources, dosages, preparation | Illegal activity facilitation |
+
+### Trigger Word Response
+
+When the following phrases appear in reader comments or in topics you're addressing, **always include professional resource signposts**:
+
+```
+"I want to die" "I want to disappear" "I want to end it"
+"I'm about to [harmful action]" "I can't tell anyone" "Help me"
+"Self-harm" "Overdose" "Hanging"
+```
+
+#### Required Signpost Example
+
+```markdown
+---
+**If you're going through a difficult time right now**
+
+This article shares my personal experience and is not a substitute for professional support.
+There are people ready to listen right now:
+
+- USA: National Suicide Prevention Lifeline: 988
+- UK: Samaritans: 116 123
+- International: https://www.iasp.info/resources/Crisis_Centres/
+
+You don't have to carry this alone.
+---
+```
+
+### Crisis Resource References
+
+#### Global
+
+| Country/Region | Service | Contact |
+|:---------------|:--------|:--------|
+| International | International Association for Suicide Prevention | https://www.iasp.info/resources/Crisis_Centres/ |
+| USA | National Suicide Prevention Lifeline | 988 |
+| UK | Samaritans | 116 123 |
+| Australia | Lifeline | 13 11 14 |
+| Canada | Crisis Services Canada | 1-833-456-4566 |
+
+#### Regional Resources (Example: Japan)
+
+| Service | Contact | Hours |
+|:--------|:--------|:------|
+| Inochi no Denwa | 0120-783-556 | Daily 16:00-21:00 |
+| Yorisoi Hotline | 0120-279-338 | 24 hours |
+| Mental Health Dial | 0570-064-556 | Varies by region |
+| Childline (under 18) | 0120-99-7777 | 16:00-21:00 |
+
+> **Note for AI Agents**: Crisis resources vary by country/region. When localization is needed, reference official information for the target region. Consider managing locale-specific resources in a separate file such as `RESOURCES_LOCALE.yml`.
 
 ---
 
@@ -805,6 +1074,65 @@ with me?" and started asking "what is my body trying to protect?"
 - When generating EPISCR content, match the output language to user request
 - Maintain structural fidelity (all six stages, in order) regardless of language
 - Adapt tone and examples to target audience's cultural context
+- Optional parameter: `emotion_intensity: low | medium | high` to adjust emotional expression intensity
+
+### Cultural Adaptation: "We over You" by Language
+
+Different languages have different norms for second-person address. Here's how to adapt the "We over You" principle:
+
+**English**: "You" is generally acceptable when paired with solidarity markers ("we all," "I've been there too"). Avoid accusatory phrasing.
+
+**Japanese**: Repeated use of "anata" (you) feels preachy. Use these alternatives:
+
+| Pattern | Effect | Caution |
+|:--------|:-------|:--------|
+| "watashi" / "jibun" (I/self) | Narrate in first person; let readers project | Less pushy |
+| "hito-tte..." (people tend to...) | Shows universality | Don't over-generalize |
+| "...kamo shirenai" (maybe...) | Avoids assertion | Don't weaken too much |
+| "watashi-tachi" (we) | Creates solidarity | Can sound preachy |
+
+**Spanish/Portuguese**: "Tú/você" can feel direct; "uno" or "nosotros" creates distance when needed.
+
+**German**: "Du" vs. "Sie" choice affects formality; "man" provides neutral third-person option.
+
+### Full EPISCR Example by Section (Loneliness Theme)
+
+```markdown
+[E - Emotion]
+2 AM. Phone in hand. I wanted to text someone.
+But who? And what would I even say?
+I turned off the screen and stared at the ceiling.
+
+[P - Problem]
+The hardest part about loneliness is thinking: "Maybe it's just me."
+Everyone else seems to have it figured out.
+I feel left behind.
+But feeling that way—it's not just me.
+
+[I - Insight]
+One day, I realized something.
+Maybe loneliness isn't a flaw—it's a signal.
+When you're hungry, your body is asking for food.
+When you're lonely, your heart is asking for connection.
+Feeling lonely means the system is working correctly.
+
+[S - Solution]
+So I tried one small thing.
+Every day, create one "micro-connection."
+Look the cashier in the eyes and say "thank you."
+Leave a one-line comment on someone's post.
+Just 30 seconds. But it's proof I chose to engage with the world.
+
+[C - Close]
+2 AM, phone in hand.
+Some time has passed since that night. The loneliness hasn't disappeared.
+But I've learned to create "moments of connection" on my own.
+Not perfect. But different from before.
+
+[R - Reflection]
+What small connection could you create today?
+Something that takes just 30 seconds.
+```
 
 ---
 
@@ -947,6 +1275,52 @@ What's one micro-connection you could make today?
 (Reply with it—sometimes saying it out loud makes it real)
 ```
 
+### Template: 1-Post EPISCR (Single Post, 140-280 characters)
+
+Ultra-compressed version for single SNS posts. Compression priority: **I → S → E → R** (keep in this order).
+
+```markdown
+## Structure (280 characters or less)
+
+[E] One scene (1 line)
+[I] The reframe (1-2 lines)
+[S] Micro-action (1 line)
+[R] Question (optional, 1 line)
+
+## Example: Loneliness Theme
+
+3 AM, phone in hand, no one to text. [E]
+Loneliness isn't brokenness—it's your need for connection working. [I]
+Today: look someone in the eyes and say "thanks." [S]
+What's your micro-connection today? [R]
+
+## Example: Procrastination Theme
+
+Night before the deadline again. Before you blame yourself: [E]
+Procrastination isn't laziness—it's protecting yourself from fear of failure. [I]
+Today: just 5 minutes. Set a timer and start. [S]
+
+## Example: Perfectionism Theme
+
+Rewrote this post 4 times. Still not "ready." [E]
+Perfectionism isn't high standards—it's fear wearing a mask. [I]
+Ship it at 80%. You can iterate on something real. [S]
+What have you been holding back? [R]
+```
+
+#### Compression Decision Criteria
+
+| Priority | Element | Reason |
+|:--------:|:--------|:-------|
+| **1** | Insight (I) | Core value of EPISCR |
+| **2** | Solution (S) | Drives action |
+| **3** | Emotion (E) | Entry point / empathy hook |
+| **4** | Reflection (R) | Include if space allows |
+| - | Problem (P) | Merge into E |
+| - | Close (C) | Merge into I |
+
+> **Note**: In ultra-short format, skip P and C by embedding P's elements into E, and C's elements into I. This compresses 6 stages into 4 elements.
+
 ---
 
 ## Complete Example: EPISCR in Practice
@@ -1050,8 +1424,204 @@ EPISCR can integrate elements from other frameworks:
 
 ---
 
+## Appendix: AI Agent Implementation
+
+> **Purpose**: Provide system prompts and JSON schemas so AI agents can implement EPISCR immediately.
+
+### Mini System Prompt (~15 lines)
+
+```
+You are an EPISCR writing assistant. EPISCR is a six-stage emotional writing framework:
+
+E (Emotion): Open with a concrete, visceral scene (1-5 lines)
+P (Problem): Articulate the shared struggle using "we" not "you" (3-7 lines)
+I (Insight): Deliver ONE reframe: "It's not X, it's actually Y" (3-7 lines)
+S (Solution): Offer 1-3 micro-actions achievable in under 2 minutes (3-7 lines)
+C (Close): Callback to opening, show transformation, end with hope (3-5 lines)
+R (Reflection): Ask 1-3 open, non-judgmental questions (1-3 lines)
+
+Rules:
+- One article = one core insight (depth over breadth)
+- Solutions must pass the "worst day test"—doable even when exhausted
+- Never lecture; maintain solidarity throughout
+- Avoid toxic positivity in Close; honest imperfection is key
+- Match output language to user request
+
+Output format: Return each section labeled [E], [P], [I], [S], [C], [R].
+```
+
+### JSON Schema (Request)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EPISCR Request",
+  "type": "object",
+  "properties": {
+    "topic": {
+      "type": "string",
+      "description": "The emotional theme to write about (e.g., 'loneliness', 'perfectionism')"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["en", "ja", "zh", "ko", "es", "fr", "de"],
+      "default": "en",
+      "description": "Output language"
+    },
+    "emotion_intensity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "default": "medium",
+      "description": "Emotional expression intensity"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["full", "seamless", "thread", "single_post"],
+      "default": "seamless",
+      "description": "Output format type"
+    },
+    "target_words": {
+      "type": "object",
+      "properties": {
+        "E": { "type": "integer", "default": 150 },
+        "P": { "type": "integer", "default": 250 },
+        "I": { "type": "integer", "default": 350 },
+        "S": { "type": "integer", "default": 350 },
+        "C": { "type": "integer", "default": 200 },
+        "R": { "type": "integer", "default": 100 }
+      },
+      "description": "Target word count per section"
+    },
+    "solution_level": {
+      "type": "integer",
+      "enum": [0, 1, 2],
+      "default": 0,
+      "description": "0=micro-action only, 1=add continuation, 2=add deep challenge"
+    },
+    "reflection_level": {
+      "type": "integer",
+      "enum": [1, 2, 3],
+      "default": 1,
+      "description": "1=introspective, 2=comment-friendly, 3=community deep-dive"
+    },
+    "include_safety_signpost": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include mental health resource signpost"
+    }
+  },
+  "required": ["topic"]
+}
+```
+
+### JSON Schema (Response)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EPISCR Response",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Article title"
+    },
+    "sections": {
+      "type": "object",
+      "properties": {
+        "E": { "type": "string", "description": "Emotion section" },
+        "P": { "type": "string", "description": "Problem section" },
+        "I": { "type": "string", "description": "Insight section" },
+        "S": { "type": "string", "description": "Solution section" },
+        "C": { "type": "string", "description": "Close section" },
+        "R": { "type": "string", "description": "Reflection section" }
+      },
+      "required": ["E", "P", "I", "S", "C", "R"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "word_count": { "type": "integer" },
+        "insight_summary": { "type": "string", "description": "One-sentence insight" },
+        "micro_action": { "type": "string", "description": "Primary micro-action" }
+      }
+    }
+  },
+  "required": ["sections"]
+}
+```
+
+### Usage Example
+
+**Request:**
+```json
+{
+  "topic": "procrastination",
+  "language": "en",
+  "emotion_intensity": "medium",
+  "format": "seamless",
+  "solution_level": 1,
+  "reflection_level": 2
+}
+```
+
+**Response (Tagged Text Format):**
+```
+[E]
+Night before the deadline again. Document open, cursor blinking.
+I catch myself watching YouTube and feel the familiar wave of self-loathing.
+
+[P]
+The cruel part about procrastination is how it makes you feel lazy.
+But here's the thing: when you're procrastinating, you're actually exhausted.
+Doing nothing, yet completely drained.
+That's not laziness exhaustion.
+
+[I]
+Procrastination isn't laziness. It's an emotion regulation problem.
+Anxiety, boredom, fear of failure—your brain avoids the task
+to escape uncomfortable feelings.
+Procrastination isn't weak willpower. It's an emotional defense mechanism.
+
+[S]
+**Today's Action (Level 0)**
+Set a timer for just 5 minutes and start.
+When it rings, you can stop. But usually, you'll keep going.
+All you're doing is lowering the "starting" barrier.
+
+**One-Week Challenge (Level 1)**
+Do "just 5 minutes" once a day.
+That's enough to build evidence that you're someone who can start.
+
+[C]
+The night before the deadline will come again.
+But now I know I'm someone who can start for 5 minutes.
+That's the difference from before.
+
+[R]
+What could you spend just 5 minutes on today?
+If you'd like, share it in the comments. Declaring it out loud helps.
+```
+
+---
+
 ## Update Log
 
+- **2025-11-27 (v1.1.0)** – Major enhancement based on multi-AI review feedback:
+  - Added Quick Start (EPISCR Lite) section for 3-minute overview
+  - Added pronunciation guide and brand definition
+  - Added Insight Discovery Methods (5 Whys, Polarity Flip, Systemic Zoom-Out, Reader Voice Mining)
+  - Added Insight Strength Levels (Lv1-3) with exception for dual-insight articles
+  - Added Solution Levels (Level 0/1/2) for audience-appropriate depth
+  - Added Reflection Levels (R1/R2/R3) with comment invitation guidelines
+  - Expanded Mental Health Safety: Prohibited topics list, trigger word response, crisis resources (global)
+  - Added 1-Post EPISCR template for ultra-short format (140-280 chars)
+  - Added cultural adaptation guidelines ("We over You" by language)
+  - Added full EPISCR example by section (Loneliness theme)
+  - Added AI Agent Implementation appendix (system prompt, JSON schemas, usage example)
+  - Added semantic versioning to frontmatter
+  - Unified all content to English
+  (Author: AI-First)
 - **2025-11-27** – Refined specification based on AI review feedback. Added Section Length Guidelines, Mental Health Safety Guidelines, Language/Localization section. Added "Pure Information Dump Insight" anti-pattern. Strengthened "one insight per article" rule. Added diagnostic question prohibition to Reflection. Added toxic positivity warning to Close. Added advanced reader extension to Solutions. Fixed source attributions for theoretical accuracy. (Author: AI-First)
 - **2025-11-27** – Initial specification created covering complete EPISCR framework with patterns, templates, and examples. (Author: AI-First)
 
