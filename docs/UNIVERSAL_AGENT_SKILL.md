@@ -1,13 +1,13 @@
 ---
-title: Agent Skill All Model
+title: Universal Agent Skill
 slug: agent-skill
 summary: "Skill spec overview"
 type: spec
 tags: [topic, ai-first, agent, skill, specification]
-last_updated: 2025-11-24
+last_updated: 2025-12-09
 ---
 
-# Topic: Agent Skill All Model - Universal Specification
+# Topic: Universal Agent Skill - Universal Specification
 
 ## Agent Contract
 
@@ -41,10 +41,10 @@ Within this repository, responsibilities for applying this specification in prac
 
 ## TL;DR
 
-- **WHAT**: A vendor-neutral specification defining agent skills as folder-based modules with `skill.yaml` manifests, implementations, and documentation
+- **WHAT**: A vendor-neutral specification defining agent skills as folder-based modules with `SKILL.md` manifests (YAML frontmatter + Markdown instructions), optional tools definitions, implementations, and documentation
 - **WHY**: Enables skill portability across different models and execution environments while minimizing context overhead (~400 tokens) and maximizing output quality
 - **WHEN**: Building reusable agent capabilities for document processing, code generation, data analysis, or any task-specific domain expertise
-- **HOW**: Create a directory with `skill.yaml` (manifest), implementation scripts (Python/TypeScript), and supporting documentation following the three-layer model (Specification → Adapter → Implementation)
+- **HOW**: Create a directory with `SKILL.md` (manifest + instructions), optional `tools.json`, implementation scripts (Python/TypeScript), and supporting documentation following the three-layer model (Specification → Adapter → Implementation)
 - **WATCH_OUT**: Avoid embedding vendor-specific logic in core specification; use `host_overrides` and adapters for platform-specific needs
 
 ---
@@ -53,19 +53,17 @@ Within this repository, responsibilities for applying this specification in prac
 
 ### Agent Skill
 
-**Definition**: A task-specific module consisting of a machine-readable manifest (`skill.yaml`), executable implementations, and supporting documentation that can be dynamically loaded and invoked by AI agents.
+**Definition**: A task-specific module consisting of a primary `SKILL.md` file (manifest + instructions), executable implementations (optional), and supporting resources. This format is natively supported by both Claude (Anthropic) and Codex (OpenAI).
 
 **Scope**:
 - **Includes**:
-  - Declarative metadata (capabilities, permissions, safety constraints)
-  - One or more tool definitions with JSON Schema contracts
-  - Python and/or TypeScript implementations
-  - Human and model-oriented documentation
-  - Test cases and evaluation criteria
+  - `SKILL.md`: The single source of truth containing YAML frontmatter (metadata) and Markdown body (instructions).
+  - **Tools**: Executable functions defined in `tools.json` or embedded in scripts (MCP/OpenAI compatible).
+  - **Implementations**: Python (`.py`) or TypeScript (`.ts`) scripts.
+  - **Resources**: Templates, data files, or sub-documents.
 - **Excludes**:
-  - Platform-specific UI configurations (belongs in `host_overrides`)
-  - Permanent system prompt additions (skills load on-demand)
-  - General-purpose libraries without agent-specific interfaces
+  - Complex proprietary configuration files (unless required by specific host overrides).
+  - Hardcoded absolute paths (must use relative paths or environment variables).
 
 **Related Concepts**:
 - **Similar**: MCP tools, OpenAI function calling, LangChain tools
@@ -76,14 +74,13 @@ Within this repository, responsibilities for applying this specification in prac
 
 ```text
 pdf-processing/
-├── skill.yaml           # Manifest
-├── README.md            # Human documentation
-├── INSTRUCTIONS.md      # Model-specific guidance
+├── SKILL.md             # Manifest + Instructions (Universal)
 ├── scripts/
 │   ├── helper.py        # Python implementation
 │   └── helper.ts        # TypeScript implementation
-└── tests/
-    └── cases.yaml       # Test definitions
+├── tests/
+│   └── cases.yaml       # Test definitions
+└── tools.json           # Optional JSON Schema tools definition (for MCP/Function calling)
 ```
 
 **Sources**: [R1], [R2]
@@ -94,7 +91,7 @@ pdf-processing/
 
 **Scope**:
 - **Includes**:
-  - **Layer 1**: `skill.yaml`, directory structure, schemas (vendor-neutral)
+  - **Layer 1**: `SKILL.md` (frontmatter + instructions), optional `tools.json`, directory structure (vendor-neutral)
   - **Layer 2**: Transformation adapters in each execution environment
   - **Layer 3**: Actual code in `scripts/` and resources in `templates/`
 - **Excludes**:
@@ -110,19 +107,15 @@ pdf-processing/
 **Example**:
 
 ```yaml
-# Layer 1: Vendor-neutral specification
-apiVersion: skills.v1
-kind: Skill
-metadata:
-  id: com.example.pdf_processing
-spec:
-  tools:
-    - name: extract_text
-      input_schema: { type: object, properties: {...} }
-      implementation:
-        entrypoint: scripts/helper.py
-        handler: extract_text
-        runtime: python
+# Layer 1: Vendor-neutral specification (SKILL.md)
+---
+name: pdf-processing
+description: Extract text and tables from PDFs with optional OCR; use when PDFs, forms, or document extraction are mentioned.
+version: 1.0.0
+---
+
+# PDF Processing Instructions
+[...Markdown instructions for the model...]
 ```
 
 ```python
@@ -132,21 +125,17 @@ from typing import Any
 
 # Layer 2: Host-specific adapter (e.g., for Claude platform)
 class ClaudeSkillAdapter:
-    """Adapter that transforms vendor-neutral skill to Claude-specific format"""
+    """Adapter that transforms universal SKILL.md to Claude-specific tools"""
 
-    def __init__(self, skill_spec: dict):
-        self.spec = skill_spec
-        self.runtime = self._detect_runtime()
+    def __init__(self, skill_dir: str):
+        self.skill_dir = skill_dir
+        self.metadata = self._parse_frontmatter()
 
     def transform_to_claude_tool(self) -> dict:
-        """Convert skill.yaml tool definition to Claude tool format"""
-        tool = self.spec['spec']['tools'][0]
-        return {
-            "name": tool['name'],
-            "description": tool.get('description', ''),
-            "input_schema": self._adapt_schema(tool['input_schema']),
-            "implementation": self._create_claude_wrapper(tool)
-        }
+        """Convert tools.json definition to Claude tool format"""
+        # Logic to read tools.json if present, or infer from SKILL.md
+        pass
+```
 
     def _adapt_schema(self, schema: dict) -> dict:
         """Adapt JSON Schema to Claude's specific requirements"""
@@ -262,7 +251,7 @@ def select_skills(user_message: str) -> list["Skill"]:
 
 ### Host Overrides
 
-**Definition**: Platform-specific customizations declared in the `host_overrides` section of `skill.yaml` that allow execution environments to adapt skill behavior without modifying the core specification.
+**Definition**: Platform-specific customizations declared in the `host_overrides` block of `SKILL.md` frontmatter (or a companion config file) that allow execution environments to adapt skill behavior without modifying the core specification.
 
 **Scope**:
 - **Includes**:
@@ -300,43 +289,54 @@ host_overrides:
 
 ## Core Patterns
 
-### Pattern: Folder-Based Skill Module
+### Pattern: Universal Manifest (`SKILL.md`)
 
-**Intent**: Organize all skill components (manifest, code, docs, tests) in a single directory for easy discovery, distribution, and version control.
+**Intent**: Use a single `SKILL.md` file with YAML frontmatter to serve as both the machine-readable manifest and the model-readable instructions, compatible with Claude and Codex.
 
-**Context**: When building reusable agent skills that need to be shared, versioned, and maintained independently across projects and environments.
+**Context**: When building skills that need to be discoverable by standard agent runtimes (Claude Code, OpenAI Codex) without requiring custom manifest parsers.
 
 **Implementation**:
 
 ```text
 my-skill/
-├── skill.yaml           # Required: Machine-readable manifest
-├── README.md            # Recommended: Human-readable documentation
-├── INSTRUCTIONS.md      # Optional: Detailed guide for models
-├── prompts/             # Optional: Few-shot examples
-│   └── examples.md
+├── SKILL.md             # Required: Frontmatter + Instructions
 ├── scripts/             # Optional: Executable code
-│   ├── helper.py
-│   └── helper.ts
-├── templates/           # Optional: Output templates
-│   └── template.txt
-└── tests/               # Optional: Test definitions
-    ├── cases.yaml
-    └── fixtures/
+│   └── helper.py
+└── tools.json           # Optional: Tool definitions (MCP/OpenAI Schema)
+```
+
+**Structure of `SKILL.md`**:
+
+```markdown
+---
+name: my-skill-name
+description: A clear description of what this skill does and when to use it (limit to ~100 chars).
+version: 1.0.0
+---
+
+# My Skill Name
+[Detailed instructions, examples, and guidelines go here.
+This content is only loaded when the skill is activated.]
+
+## Examples
+- Example usage 1
+- Example usage 2
 ```
 
 **Key Principles**:
-- **Single Directory = Single Skill**: All related assets bundled together for atomic versioning
-- **Convention Over Configuration**: Standard file names (`skill.yaml`, `README.md`) enable automatic discovery
-- **Language Agnostic**: Python and TypeScript can coexist; hosts choose appropriate runtime
-- **Self-Documenting**: Human docs, model instructions, and machine specs all present
+- **Frontmatter as Metadata**: `name` and `description` are the minimum required fields for discovery.
+- **Body as Context**: The Markdown body acts as the "System Prompt" extension for that specific skill.
+- **Cross-Platform**:
+  - **Codex**: Looks for `SKILL.md` in `~/.codex/skills`.
+  - **Claude**: Supports `SKILL.md` folders for extending capabilities.
+- **Progressive Disclosure**: Models see only the frontmatter initially; body is injected on demand.
 
 **Trade-offs**:
-- ✅ **Advantages**: Easy distribution (zip/git), clear boundaries, version control friendly
-- ⚠️ **Disadvantages**: Duplication if multiple skills share code (mitigate with shared libraries)
-- 💡 **Alternatives**: Monorepo with shared code, package-based distribution with dependencies
+- ✅ **Advantages**: Native support in major tools, human-readable, simple to author.
+- ⚠️ **Disadvantages**: Less strict typing than a dedicated schema file (mitigated by linter).
+- 💡 **Alternatives**: Separate YAML manifest file (legacy/custom), `package.json` (JS-centric).
 
-**Sources**: [R1], [R2]
+**Sources**: [R1], [R6], [R7]
 
 ---
 
@@ -402,39 +402,39 @@ tools:
 **Implementation**:
 
 ```yaml
-# skill.yaml
-tools:
-  - name: extract_text
-    description: Extracts text from PDF (Python runtime).
-    input_schema:
-      type: object
-      required: [path]
-      properties:
-        path: { type: string }
-    output_schema:
-      type: object
-      properties:
-        text: { type: string }
-    implementation:
-      entrypoint: scripts/helper.py
-      handler: extract_text
-      runtime: python
-
-  - name: extract_text_ts
-    description: Extracts text from PDF (TypeScript runtime).
-    input_schema:
-      type: object
-      required: [path]
-      properties:
-        path: { type: string }
-    output_schema:
-      type: object
-      properties:
-        text: { type: string }
-    implementation:
-      entrypoint: scripts/helper.ts
-      handler: extract_text
-      runtime: node
+# tools.json (or embedded in SKILL.md via mcp-server setup)
+[
+  {
+    "name": "extract_text",
+    "description": "Extracts text from PDF (Python runtime).",
+    "input_schema": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" }
+      }
+    },
+    "implementation": {
+      "runtime": "python",
+      "path": "scripts/helper.py"
+    }
+  },
+  {
+    "name": "extract_text_ts",
+    "description": "Extracts text from PDF (TypeScript runtime).",
+    "input_schema": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" }
+      }
+    },
+    "implementation": {
+      "runtime": "node",
+      "path": "scripts/helper.ts"
+    }
+  }
+]
 ```
 
 **Key Principles**:
@@ -541,24 +541,23 @@ when_to_use:
 
 **Implementation**:
 
-```yaml
+```markdown
+# SKILL.md
+---
 # Lightweight metadata (always loaded)
-metadata:
-  id: com.example.pdf_processing
-  name: pdf-processing
-  version: 1.0.0
-  tags: [pdf, extraction]
-spec:
-  summary: >
-    Extract text/tables from PDFs with optional OCR.
-  when_to_use:
-    triggers:
-      mentions: ["PDF", "OCR"]
-  # Instructions loaded on-demand
-  instructions:
-    system: |
-      You are a PDF Processing Skill...
-    readme: "README.md"  # File loaded only when skill activated
+name: pdf-processing
+description: Extract text/tables from PDFs with optional OCR; use when PDFs, "OCR", or "scan" are mentioned.
+tags: [pdf, extraction]
+version: 1.0.0
+---
+
+# PDF Processing Instructions
+(This content is ONLY loaded on-demand when the skill is activated)
+
+You are a PDF Processing Skill.
+- For simple extraction, use `extract_text`.
+- For scanned docs, use `ocr_page`.
+- Refer to `templates/output_format.txt` for structuring the response.
 ```
 
 **Key Principles**:
@@ -576,39 +575,61 @@ spec:
 
 ---
 
-### Pattern: Formal Manifest Schema
+### Pattern: Formal Frontmatter Schema
 
-**Intent**: Define a strict, versioned structure for `skill.yaml` to ensure validation tools and IDEs can reliably parse and autocomplete skill definitions.
+**Intent**: Define a strict, versioned structure for `SKILL.md` frontmatter so validation tools and IDEs can reliably parse and autocomplete skill definitions.
 
-**Context**: As the ecosystem grows, ad-hoc YAML structures lead to fragmentation. A formal schema ensures consistency across all skills.
+**Context**: As the ecosystem grows, ad-hoc frontmatter leads to fragmentation. A formal schema keeps SKILL.md portable while remaining Markdown-native.
 
 **Implementation**:
 
-```yaml
-apiVersion: skills.v1
-kind: Skill
-metadata:
-  id: com.example.pdf_processing
-  version: 1.0.0
-spec:
-  tools: [...]
-permissions: [...]
-secrets:    # New: Explicit secret declaration
-  required: [...]
-host_overrides: [...]
+```markdown
+---
+name: pdf-processing
+description: Extract text and tables from PDFs with optional OCR; use when PDFs, forms, or document extraction are mentioned.
+version: 1.0.0
+tags: [pdf, extraction]
+permissions:
+  filesystem:
+    read: ["**/*.pdf"]
+host_overrides:
+  - host: "example-ide"
+    config:
+      tools_aliases:
+        extract_text: "pdf_text"
+evaluation:
+  smoke_tests:
+    - name: basic_extract
+      tool: extract_text
+      input:
+        path: "samples/sample.pdf"
+tools:
+  - name: extract_text
+    description: Extract text from a PDF file with optional page range.
+    input_schema:
+      type: object
+      required: [path]
+      properties:
+        path:
+          type: string
+          description: "Path to the PDF file"
+---
+
+# PDF Processing Instructions
+Refer to `tools.json` or scripts for implementations. Keep detailed guidance here to load on activation.
 ```
 
 **Key Principles**:
-- **Versioning**: `apiVersion` allows the schema to evolve without breaking existing skills
-- **Root Validation**: Top-level keys are fixed; no arbitrary fields allowed
-- **Type Safety**: Each section enforces specific types (e.g., `permissions` must be an object)
+- **Versioning**: `version` in frontmatter allows tracking changes.
+- **Root Validation**: `name` and `description` are mandatory.
+- **Extensible**: Add custom keys (e.g., `permissions`, `secrets`, `evaluation`, `tools`) in frontmatter; hosts may ignore unknown keys but should not break.
 
 **Trade-offs**:
-- ✅ **Advantages**: Enables linting, validation, and reliable parsing
-- ⚠️ **Disadvantages**: Slightly more verbose boilerplate
-- 💡 **Alternatives**: Schemaless YAML (flexible but fragile)
+- ✅ **Advantages**: Simplified authoring, standard across vendors.
+- ⚠️ **Disadvantages**: YAML frontmatter inside Markdown can be prone to formatting errors if not careful.
+- 💡 **Alternatives**: Side-by-side manifest file (legacy/custom) when a repository requires strict YAML validation.
 
-**Sources**: [R1]
+**Sources**: [R1], [R6]
 
 ---
 
@@ -722,10 +743,10 @@ def research_topic(topic, ctx):
 
 ## Decision Checklist
 
-- [ ] **Skill follows folder-based structure**: Directory contains `skill.yaml` + implementations + docs [R1]
-  - **Verify**: Check for `skill.yaml` at directory root
-  - **Impact**: Skills without manifests cannot be discovered or validated
-  - **Mitigation**: Generate `skill.yaml` from existing documentation or code
+- [ ] **Skill follows `SKILL.md` standard**: Directory contains `SKILL.md` with valid frontmatter [R1, R6]
+  - **Verify**: Check for `SKILL.md` at directory root and validate YAML frontmatter (`name`, `description`).
+  - **Impact**: Skills will not be discovered by Codex or Claude.
+  - **Mitigation**: Add `SKILL.md` with required frontmatter; migrate any manifest content from other files into it.
 
 - [ ] **All tools have JSON Schema contracts**: `input_schema` and `output_schema` defined [R1]
   - **Verify**: Parse schemas and validate they are valid JSON Schema
@@ -738,7 +759,7 @@ def research_topic(topic, ctx):
   - **Mitigation**: Test skill in restricted sandbox and expand permissions incrementally
 
 - [ ] **Skill loads in <500 tokens (metadata only)**: Progressive disclosure enabled [R4], [R5]
-  - **Verify**: Count tokens in `metadata` + `spec.summary` + `when_to_use`
+  - **Verify**: Count tokens in frontmatter + concise `summary` / `when_to_use` sections
   - **Impact**: Heavy metadata prevents scaling to large skill libraries
   - **Mitigation**: Move detailed guidance to `INSTRUCTIONS.md`, use file references
 
@@ -748,17 +769,17 @@ def research_topic(topic, ctx):
   - **Mitigation**: Extract platform-specific settings to `host_overrides` array
 
 - [ ] **Semantic versioning used**: Breaking changes increment major version [R1]
-  - **Verify**: Check `metadata.version` matches semantic versioning format
+  - **Verify**: Check `version` in frontmatter matches semantic versioning format
   - **Impact**: Breaking changes without major version increment break dependents
   - **Mitigation**: Implement `CHANGELOG.md` and version validation in CI
 
 - [ ] **Safety constraints declared**: PII handling, overwrite confirmations, redaction policies set [R1]
-  - **Verify**: Review `spec.safety` section completeness
+  - **Verify**: Review `safety` block in frontmatter for completeness
   - **Impact**: Uncontrolled data handling creates compliance risks
   - **Mitigation**: Add safety defaults in host adapter if skill omits them
 
 - [ ] **Smoke tests defined**: At least one test in `evaluation.smoke_tests` [R1]
-  - **Verify**: Parse `spec.evaluation.smoke_tests` array
+  - **Verify**: Parse `evaluation.smoke_tests` array
   - **Impact**: No automated validation of skill functionality
   - **Mitigation**: Generate basic test from tool examples or manual testing
 
@@ -780,7 +801,7 @@ def research_topic(topic, ctx):
 - [ ] **Documentation exists for both humans and models**: `README.md` and optional `INSTRUCTIONS.md` [R1]
   - **Verify**: Check file existence and non-empty content
   - **Impact**: Poor discoverability, unclear usage for humans and models
-  - **Mitigation**: Generate README from `skill.yaml` metadata as starting point
+  - **Mitigation**: Generate README from `SKILL.md` frontmatter as a starting point
 
 ---
 
@@ -822,7 +843,7 @@ spec:
 
 ### Anti-pattern: Vendor-Specific Logic in Core Specification
 
-**Symptom**: `skill.yaml` contains conditionals, platform-specific paths, or tool names tied to one execution environment.
+**Symptom**: `SKILL.md` frontmatter (including `host_overrides`) contains conditionals, platform-specific paths, or tool names tied to one execution environment.
 
 **Why It Happens**: Skill developed against single platform; portability not considered initially.
 
@@ -981,7 +1002,7 @@ metadata:
 **Context Overhead per Skill**: Average token count for skill metadata (excluding on-demand content).
 - **Why It Matters**: Determines maximum skill library size before context exhaustion
 - **Target**: <500 tokens for metadata, <2000 tokens total when activated
-- **Measurement**: Token counter on `metadata` + `spec.summary` + `when_to_use`
+- **Measurement**: Token counter on frontmatter + any concise `summary` / `when_to_use` text
 - **Tools**: Tokenizer (tiktoken, transformers), CI validation script
 - **Frequency**: Every commit with automated checks
 
@@ -1059,9 +1080,13 @@ class SkillTestRunner:
         self.test_cases = self._load_test_cases()
 
     def _load_skill_spec(self) -> dict:
-        """Load and validate skill.yaml"""
-        with open(self.skill_path / "skill.yaml") as f:
-            spec = yaml.safe_load(f)
+        """Load and validate SKILL.md frontmatter"""
+        skill_md = self.skill_path / "SKILL.md"
+        raw = skill_md.read_text()
+        parts = raw.split("---", 2)
+        if len(parts) < 3:
+            raise ValueError("SKILL.md frontmatter not found")
+        spec = yaml.safe_load(parts[1])
         self._validate_spec(spec)
         return spec
 
@@ -1267,7 +1292,7 @@ jobs:
 
 ### Success Criteria
 
-- [ ] Skill passes JSON Schema validation for `skill.yaml`
+- [ ] `SKILL.md` frontmatter passes schema validation
 - [ ] All declared tools execute successfully in smoke tests
 - [ ] Permission boundaries enforced (no unauthorized file/network/process access)
 - [ ] Metadata loads in <500 tokens, full activation in <2000 tokens
@@ -1302,14 +1327,31 @@ Frontend skills should address specific design dimensions:
 ### Document Processing Skills
 
 Pre-configured skills for document generation (presentations/spreadsheets/documents/PDFs) demonstrate the pattern of combining:
-- Declarative capabilities in `skill.yaml`
+- Declarative capabilities in `SKILL.md` frontmatter
 - Executable scripts for automation
 - Templates for consistent output formatting
 
 ---
 
+## Platform Compatibility
+
+### Codex (OpenAI)
+- **Path**: `~/.codex/skills` (default)
+- **Discovery**: Local file system scan for `SKILL.md` in `~/.codex/skills` or configured paths.
+- **Behavior**: Injects `name` and `description` into context. Body is loaded on-demand (Progressive Disclosure).
+- **Format**: YAML frontmatter + Markdown body.
+
+### Claude (Anthropic)
+- **Path**: Project-specific `.claude/skills` or defined via MCP configuration.
+- **Discovery**: `SKILL.md` folders or MCP server attachment.
+- **Behavior**: Context-aware tool loading.
+- **Format**: `SKILL.md` (metadata/instructions) + `tools.json` / MCP Interface.
+
+---
+
 ## Update Log
 
+- **2025-12-09** – Updated specification to v2.0 (Unified Universal). Adopted `SKILL.md` as canonical manifest for compatibility with Claude and Codex. Deprecated `skill.yaml` in favor of frontmatter + `tools.json`. (Author: AI-First)
 - **2025-11-24** – Fixed Update Log date inconsistencies. (Author: AI-First)
 - **2025-11-22** – Refined specification based on multi-agent review. Added Formal Manifest Schema, Declarative Secrets, Standardized Runtime Protocol, and Host-Mediated Composition patterns. Clarified MCP relationship. (Author: AI-First)
 - **2025-11-19** – Added concrete Layer 2 (Adapter) implementation examples for Claude and OpenAI platforms. Enhanced testing strategies with detailed test runner implementation and CI/CD integration examples. (Author: AI-First)
@@ -1345,9 +1387,11 @@ Pre-configured skills for document generation (presentations/spreadsheets/docume
 - [R3] Anthropic. "Agent Skills Overview." Claude Documentation. https://docs.anthropic.com/en/docs/agents-and-tools/agent-skills/overview (accessed 2025-11-13)
 - [R4] Anthropic. "Improving Frontend Design Through Skills." Claude Blog. https://claude.com/blog/improving-frontend-design-through-skills (accessed 2025-11-13)
 - [R5] Anthropic. "Skills Repository and Examples." GitHub. https://github.com/anthropics/skills (accessed 2025-11-13)
+- [R6] OpenAI. "Skills (experimental)." Codex Documentation. https://github.com/openai/codex/blob/main/docs/skills.md (accessed 2025-12-09)
+- [R7] HeftiWeb. "Skills in Codex: A library for your workflows." HeftiWeb Blog. https://blog.heftiweb.ch/p/skills-in-codex-a-library-for-your (accessed 2025-12-09)
 
 ---
 
-**Document ID**: `docs/AGENT_SKILL.md`
-**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/AGENT_SKILL.md`
+**Document ID**: `docs/UNIVERSAL_AGENT_SKILL.md`
+**Canonical URL**: `https://github.com/artificial-intelligence-first/ssot/blob/main/docs/UNIVERSAL_AGENT_SKILL.md`
 **License**: MIT
