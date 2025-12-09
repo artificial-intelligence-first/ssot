@@ -1685,7 +1685,7 @@ await analytics.save_report({
 - [json-schema](https://json-schema.org/) – Required for type generation and validation
 
 ### Related Topics
-- [AGENT_SKILL.md](./AGENT_SKILL.md) – Complementary specification for agent skill packaging and distribution
+- [UNIVERSAL_AGENT_SKILL.md](./UNIVERSAL_AGENT_SKILL.md) – Complementary specification for agent skill packaging and distribution
 - [EXEC_PLAN.md](./EXEC_PLAN.md) – Task planning methodology for AI-driven development
 - [SSOT.md](./SSOT.md) – Governance guide for Single Source of Truth
 - [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling) – Alternative approaches and comparison points

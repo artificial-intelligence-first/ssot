@@ -726,7 +726,7 @@ These examples are intended as copy-pastable starting points that novice users a
 
 ### Related Topics
 - [SSOT.md](./SSOT.md) – Single Source of Truth governance and definitions
-- [AGENT_SKILL.md](./AGENT_SKILL.md) – Agent skill specification for task execution
+- [UNIVERSAL_AGENT_SKILL.md](./UNIVERSAL_AGENT_SKILL.md) – Universal agent skill specification for task execution
 - [CODE_MCP.md](./CODE_MCP.md) – Code execution patterns for AI agents
 
 ### Advanced / Platform-specific

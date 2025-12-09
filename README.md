@@ -57,7 +57,7 @@ cp docs/_templates/TOPIC_TEMPLATE.md docs/YOUR_TOPIC.md
 | Document | Description | Type |
 |:---------|:------------|:----:|
 | [**SSOT.md**](./docs/SSOT.md) | Governance guide for Single Source of Truth principles | Guide |
-| [**AGENT_SKILL.md**](./docs/AGENT_SKILL.md) | Universal specification for agent skills | Spec |
+| [**UNIVERSAL_AGENT_SKILL.md**](./docs/UNIVERSAL_AGENT_SKILL.md) | Universal specification for agent skills | Spec |
 | [**CODE_MCP.md**](./docs/CODE_MCP.md) | Model Context Protocol implementation guide | Reference |
 | [**EXEC_PLAN.md**](./docs/EXEC_PLAN.md) | AI-driven task planning methodology | Spec |
 | [**TYPESCRIPT_STANDARD.md**](./docs/TYPESCRIPT_STANDARD.md) | TypeScript configuration standards | Spec |
@@ -71,7 +71,7 @@ cp docs/_templates/TOPIC_TEMPLATE.md docs/YOUR_TOPIC.md
 ssot/
 ├── docs/                           # Core documentation
 │   ├── SSOT.md                    # Governance guide
-│   ├── AGENT_SKILL.md             # Agent skill specification
+│   ├── UNIVERSAL_AGENT_SKILL.md   # Universal agent skill specification
 │   ├── CODE_MCP.md                # MCP implementation guide
 │   ├── EXEC_PLAN.md               # ExecPlan methodology
 │   ├── TYPESCRIPT_STANDARD.md     # TypeScript standards

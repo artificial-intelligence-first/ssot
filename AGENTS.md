@@ -178,7 +178,7 @@ When agents have overlapping concerns:
 |:---------|:------------|
 | [Home](./index.md) | Repository overview and human setup instructions |
 | [SSOT.md](./SSOT.md) | Governance guide and canonical definitions |
-| [AGENT_SKILL.md](./AGENT_SKILL.md) | Agent skill specification |
+| [UNIVERSAL_AGENT_SKILL.md](./UNIVERSAL_AGENT_SKILL.md) | Universal agent skill specification |
 | [EXEC_PLAN.md](./EXEC_PLAN.md) | Task planning methodology |
 
 ---
