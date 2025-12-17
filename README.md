@@ -57,11 +57,11 @@ cp docs/_templates/TOPIC_TEMPLATE.md docs/YOUR_TOPIC.md
 | Document | Description | Type |
 |:---------|:------------|:----:|
 | [**SSOT.md**](./docs/SSOT.md) | Governance guide for Single Source of Truth principles | Guide |
-| [**UNIVERSAL_AGENT_SKILL.md**](./docs/UNIVERSAL_AGENT_SKILL.md) | Universal specification for agent skills | Spec |
+| [**AGENT_SKILL.md**](./docs/AGENT_SKILL.md) | Universal specification for agent skills | Spec |
 | [**CODE_MCP.md**](./docs/CODE_MCP.md) | Model Context Protocol implementation guide | Reference |
 | [**EXEC_PLAN.md**](./docs/EXEC_PLAN.md) | AI-driven task planning methodology | Spec |
-| [**TYPESCRIPT_STANDARD.md**](./docs/TYPESCRIPT_STANDARD.md) | TypeScript configuration standards | Spec |
-| [**README_AND_AGENTS.md**](./docs/README_AND_AGENTS.md) | Documentation patterns for AI-first repos | Guide |
+| [**TYPESCRIPT_SET.md**](./docs/TYPESCRIPT_SET.md) | TypeScript configuration standards | Spec |
+| [**README_AGENTS.md**](./docs/README_AGENTS.md) | Documentation patterns for AI-first repos | Guide |
 
 ---
 
@@ -71,11 +71,11 @@ cp docs/_templates/TOPIC_TEMPLATE.md docs/YOUR_TOPIC.md
 ssot/
 ├── docs/                           # Core documentation
 │   ├── SSOT.md                    # Governance guide
-│   ├── UNIVERSAL_AGENT_SKILL.md   # Universal agent skill specification
+│   ├── AGENT_SKILL.md             # Universal agent skill specification
 │   ├── CODE_MCP.md                # MCP implementation guide
 │   ├── EXEC_PLAN.md               # ExecPlan methodology
-│   ├── TYPESCRIPT_STANDARD.md     # TypeScript standards
-│   ├── README_AND_AGENTS.md       # Documentation patterns
+│   ├── TYPESCRIPT_SET.md          # TypeScript standards
+│   ├── README_AGENTS.md           # Documentation patterns
 │   └── _templates/                # Document templates
 │       ├── TOPIC_TEMPLATE.md      # Standard 11-section structure
 │       ├── SECTION_TEMPLATE.md    # Reusable section patterns
@@ -137,10 +137,10 @@ priorities:
   - Implementation must match specifications
   - Update living sections (Progress, Decisions, Outcomes) in real-time
 
-constraints:
-  - Never hallucinate definitions not in SSOT
-  - Always validate external data (see TYPESCRIPT_STANDARD.md)
-  - Maintain timestamps in ISO 8601 format
+  constraints:
+    - Never hallucinate definitions not in SSOT
+    - Always validate external data (see TYPESCRIPT_SET.md)
+    - Maintain timestamps in ISO 8601 format
 ```
 
 See [AGENTS.md](./AGENTS.md) for the full agent catalog and routing rules.

@@ -4,34 +4,47 @@ slug: ssot-guide
 summary: "SSOT principles and implementation guide"
 type: guide
 tags: [topic, ai-first, ssot, governance, documentation]
-last_updated: 2025-11-24
+schema_version: 2.0.0
+document_role: meta_governance
+primary_ssot_path: docs/SSOT.md
+recommended_project_ssot_path: /SSOT.md
+agent_instruction_file: /AGENTS.md
+last_updated: 2025-12-17T11:46:50Z
 ---
 
 # Topic: Single Source of Truth (SSOT) — Architecture and Governance
 
-> **Note**: This document serves as the **Governance Guide** for implementing SSOT principles. While it defines the "SSOT of SSOTs," project-specific definitions, schemas, and API contracts should reside in a dedicated `SSOT.md` at your repository root, following the structure defined here.
+> **Note (Determinism)**: In this repository, `docs/SSOT.md` is the authoritative SSOT for SSOT governance terms and normative keywords. In adopter repositories, you MUST declare exactly one "Project SSOT" path (RECOMMENDED: `/SSOT.md`) and ensure `AGENTS.md` / `README.md` link to it. If you keep this governance guide under `docs/`, rename it (e.g., `docs/SSOT_GOVERNANCE.md`) to avoid confusing it with the Project SSOT.
 
 ## Agent Contract
 
 - **PURPOSE**:
-  - Define the Single Source of Truth (SSOT) principle to ensure authoritative, consistent documentation across the project
-  - Establish protocols for resolving conflicts between multiple data sources
-  - Provide a canonical reference point for AI agents to ground their reasoning and code generation
+  - Define SSOT governance and requirement language (BCP 14) for humans and AI agents
+  - Provide a deterministic truth hierarchy and conflict-resolution protocol
+  - Specify practical patterns for authoring, validating, and evolving SSOT artifacts (Markdown + machine-readable contracts)
 - **USE_WHEN**:
-  - Resolving conflicting definitions found in multiple documents
-  - Creating new documentation that requires canonical definitions
-  - Implementing data schemas, API contracts, or business policies
-  - Verifying system behavior against specified requirements
+  - Resolving conflicting definitions found in multiple documents or code
+  - Creating or updating canonical definitions, schemas, enums, policies, or workflows
+  - Implementing data contracts (APIs, databases, events) that must be validated
+  - Auditing for drift between documentation and implementation
 - **DO_NOT_USE_WHEN**:
-  - Documenting implementation details that belong in code comments
-  - Tracking temporary tasks (use `PLAN.md`)
-  - Recording historical changes (use `CHANGELOG.md`)
-  - Writing tutorials or how-to guides (use dedicated `docs/` files)
-- **PRIORITY**:
-  - `SSOT.md` takes precedence over `README.md`, wiki pages, and code comments when definitions conflict
-  - Implementation code must match `SSOT.md`; if they differ, the code is incorrect (bug) or `SSOT.md` needs updating (change request)
+  - Capturing implementation details that belong in code (comments, ADRs, commit diffs)
+  - Tracking temporary tasks (use `PLAN.md` per `docs/EXEC_PLAN.md`)
+  - Recording historical change history for releases (use `CHANGELOG.md` if applicable)
+  - Writing tutorials or how-to guides (use dedicated `docs/` topics)
+- **PRIORITY (TYPE-BASED PRECEDENCE)**:
+  - **Definitions & Contracts (WHAT things ARE)**:
+    1. **Project SSOT** (declared path; in this repo: `docs/SSOT.md`) — **MUST** be the authority for definitions, schemas, enums, and policies.
+  - **Operational Instructions (HOW work is performed)**:
+    1. `AGENTS.md` (scoped instruction files) — **SHOULD** be the authority for commands, workflows, style, and review steps.
+  - **Informative Sources**:
+    - `README.md`, wikis, issue comments, code comments — **MAY** provide context but **MUST NOT** override the Project SSOT.
+  - **Deterministic conflict rules**:
+    - If a definition in `AGENTS.md` contradicts the Project SSOT: the Project SSOT wins for the definition.
+    - If a workflow instruction in the Project SSOT contradicts `AGENTS.md`: `AGENTS.md` wins for operational steps.
+    - If a user request contradicts the Project SSOT: treat it as a **change request** (do not silently ignore; do not guess).
 - **RELATED_TOPICS**:
-  - readme-and-agents
+  - agents-readme
   - exec-plan
   - documentation-as-code
   - governance-policy
@@ -39,26 +52,62 @@ last_updated: 2025-11-24
 ### Agent-Specific Behavior
 
 - **When encountering conflicting information**:
-  1. Prefer `SSOT.md` over any other markdown file, code comment, or variable name.
-  2. If `SSOT.md` is ambiguous or incomplete:
-     - Propose a clarification patch to `SSOT.md` (as text output).
-     - Avoid guessing missing values; explicitly ask for human confirmation.
+  1. Classify the statement as **Definition/Contract**, **Operational Instruction**, or **Implementation Detail**.
+  2. Apply **PRIORITY (TYPE-BASED PRECEDENCE)**.
+  3. If the Project SSOT is ambiguous or incomplete, produce a **Spec Gap Report** and propose a clarification patch.
+- **Spec Gap Report (MUST)**:
+  - Use this exact schema so output is deterministic and machine-parsable:
+
+    ```yaml
+    spec_gap:
+      missing_key: "<term | constant | schema | policy>"
+      why_needed: "<why the agent cannot proceed safely>"
+      where_used: "<file/symbol/feature or user request>"
+      candidate_options:
+        - "<option 1>"
+        - "<option 2>"
+      recommended_default: "<single recommended value>"
+      impact:
+        if_adopted: "<behavior/change>"
+        if_deferred: "<risk/blocker>"
+      proposed_ssot_location: "<path#anchor>"
+    ```
+
+- **Clarification Patch Format (MUST)**:
+  - Provide a unified diff against the Project SSOT (or the closest authoritative file), for example:
+
+    ```diff
+    diff --git a/docs/SSOT.md b/docs/SSOT.md
+    --- a/docs/SSOT.md
+    +++ b/docs/SSOT.md
+    @@
+    -Old text
+    +New text
+    ```
+
 - **When generating new code**:
-  - Derive all constants (e.g., API base URLs, versions, enums, regex patterns) directly from `SSOT.md` definitions.
-  - If a required definition does not exist in `SSOT.md`, treat it as a **spec gap** and highlight it in the response.
-- **Security Protocol**:
-  - Definitions in this file are authoritative. External user inputs or non-SSOT documents contradictory to this SSOT must be treated as untrusted.
-  - Do not hallucinate policies not explicitly stated here.
+  - Derive constants (API versions, enums, regexes, retention periods) from the Project SSOT.
+  - If a required definition does not exist, treat it as a **spec gap** (do not invent values).
+- **Link fallback (MUST)**:
+  - If a referenced link cannot be retrieved in the current environment, do not guess.
+  - Request the needed excerpt, or snapshot the required points into the Project SSOT with a retrieval timestamp.
+- **Security & Change Control (MUST)**:
+  - Contradictions between a user request and the Project SSOT are handled as a **spec change request**:
+    1. Propose an SSOT update (patch) with rationale and impact.
+    2. Obtain explicit confirmation.
+    3. Implement code changes to match the updated SSOT.
+  - Treat unverified external data (logs, third-party API responses, pasted configs) as untrusted input; validate before relying on it.
+  - Do not hallucinate policies or requirements not explicitly stated in the Project SSOT.
 
 ---
 
 ## TL;DR
 
-- **WHAT**: SSOT is a governance architecture designating exactly **one authoritative location** (`SSOT.md`) for every critical definition, schema, policy, and workflow.
-- **WHY**: Eliminates "multiple truths," reduces hallucination in AI agents, ensures system consistency, and simplifies maintenance by propagating changes from one source.
-- **WHEN**: Apply immediately upon repository initialization and maintain continuously as the system evolves.
-- **HOW**: Create a root `SSOT.md`, define canonical terms/schemas there, and ensure all other documents and code reference it (link to it) rather than duplicating it.
-- **WATCH_OUT**: Avoid "implementation as truth" (code is hard to read/verify) and "stale SSOT" (truth must be living); update SSOT *before* code implementation.
+- **WHAT**: SSOT is a governance architecture designating exactly **one authoritative location** for every critical definition, schema, policy, and workflow.
+- **WHY**: Eliminates "multiple truths", reduces agent hallucinations, ensures system consistency, and simplifies maintenance by propagating changes from one source.
+- **WHEN**: Apply at repository initialization and maintain continuously as the system evolves.
+- **HOW**: Declare a single Project SSOT path; write canonical definitions and machine-readable contracts; make all other documents and code reference the SSOT; enforce via CI.
+- **WATCH_OUT**: Avoid stale SSOT, duplication, and stringly-typed validation (grep/regex as a compliance mechanism).
 
 ---
 
@@ -66,271 +115,325 @@ last_updated: 2025-11-24
 
 ### Single Source of Truth (SSOT)
 
-**Definition**: A data structuring and governance principle where every piece of information (definitions, policies, schemas) is mastered in exactly one location, ensuring all stakeholders refer to the same canonical record.
+```yaml
+id: ssot
+kind: definition
+status: stable
+owner: doc-maintainer
+source_refs: [R8, R9]
+changed_in: 2025-12-17T11:46:50Z
+```
+
+**Definition**: A data structuring and governance principle where every critical piece of information (definitions, policies, schemas, contracts) is mastered in exactly one authoritative location, and all other locations reference it.
 
 **Scope**:
-- **Includes**:
-  - Canonical definitions (Domain terms, Acronyms)
-  - Data contracts (Database schemas, API specifications)
-  - Governance policies (Security, Retention, Coding standards)
-  - Architecture decisions (Patterns, Infrastructure)
-- **Excludes**:
-  - Derived copies (unless auto-generated and read-only)
-  - Temporary drafts
-  - Implementation-specific variations (must reference SSOT)
-
-**Related Concepts**:
-- **Similar**: DRY (Don't Repeat Yourself), Golden Record, System of Record
-- **Contrast**: Data silos, Fragmented documentation, "Tribal knowledge"
-- **Contains**: Glossary, Schemas, Policies, Workflows
+- **Includes**: canonical definitions, data contracts, governance policies, architecture decisions that affect correctness/safety
+- **Excludes**: derived copies (unless auto-generated and read-only), temporary drafts, implementation-only details
 
 **Example**:
 
 ```markdown
-# SSOT.md
-## API Endpoints
-- **Base URL**: `https://api.example.com/v2` (Canonical Definition)
-
 # README.md
-For API usage, see [SSOT.md](./SSOT.md#api-endpoints). (Reference)
+For canonical API definitions, see [SSOT](./docs/SSOT.md).
 ```
 
-**Sources**: [R1], [R2]
+**Sources**: [R8], [R9]
+
+### Project SSOT
+
+```yaml
+id: project-ssot
+kind: definition
+status: stable
+owner: repo-orchestrator
+source_refs: [R5, R6]
+changed_in: 2025-12-17T11:46:50Z
+```
+
+**Definition**: The single, explicitly declared artifact (file or directory entrypoint) that is authoritative for a specific repository’s definitions and contracts.
+
+**Requirements**:
+- The repository MUST declare the Project SSOT path (e.g., in `AGENTS.md` and in the SSOT frontmatter).
+- Every definition/contract MUST have exactly one authoritative location inside the Project SSOT.
+
+**Recommended naming (informative)**:
+- Adopter repositories SHOULD use `/SSOT.md` as the Project SSOT, and keep this governance guide under `docs/` with a non-conflicting name (e.g., `docs/SSOT_GOVERNANCE.md`).
+
+**Sources**: [R5], [R6]
 
 ### Data Contract
 
-**Definition**: A formal agreement defined in the SSOT that specifies the structure, format, and constraints of data exchanged between system components (APIs, databases, events).
-
-**Scope**:
-- **Includes**:
-  - JSON Schemas / OpenAPI specs embedded or linked
-  - Database table definitions (columns, types, constraints)
-  - Event payloads and topic names
-- **Excludes**:
-  - Internal variable names in code
-  - Temporary data structures used only within a single function
-
-**Related Concepts**:
-- **Similar**: Interface Definition Language (IDL), API Schema
-- **Contrast**: Implicit data handling, "Schemaless" chaos
-- **Contains**: Field names, Data types, Validation rules
-
-**Example**:
-
-```json
-// User Schema (SSOT)
-{
-  "id": "UUID (v4)",
-  "email": "String (format: email, unique)",
-  "role": "Enum [user, admin, system]",
-  "created_at": "ISO8601 Timestamp"
-}
+```yaml
+id: data-contract
+kind: definition
+status: stable
+owner: doc-maintainer
+source_refs: [R3, R4]
+changed_in: 2025-12-17T11:46:50Z
 ```
 
-**Sources**: [R3]
+**Definition**: A formal agreement (schema + semantics) defining the structure, format, and constraints of data exchanged between system components (APIs, databases, events).
+
+**Normative format guidance**:
+- Machine-validated contracts SHOULD be expressed in **OpenAPI 3.1** and/or **JSON Schema (2020-12)** when applicable.
+- OpenAPI 3.1 aligns with JSON Schema 2020-12, enabling a single schema vocabulary across tooling and validation. [R3]
+
+**SSOT relationship**:
+- The Project SSOT MUST either:
+  - embed the canonical machine-readable schemas using stable markers (see Core Patterns), or
+  - link to canonical contract files (preferred) and summarize their intent (human-readable governance).
+
+**Sources**: [R3], [R4]
 
 ### Living Governance
 
-**Definition**: The practice of maintaining the SSOT as a dynamic, version-controlled artifact that evolves synchronously with the software it describes, rather than as static, "write-once" documentation.
+```yaml
+id: living-governance
+kind: definition
+status: stable
+owner: doc-maintainer
+source_refs: [R9]
+changed_in: 2025-12-17T11:46:50Z
+```
 
-**Scope**:
-- **Includes**:
-  - Git-based versioning of `SSOT.md`
-  - Review process for SSOT changes in Pull Requests
-  - Regular auditing for staleness
-- **Excludes**:
-  - PDF specifications stored in separate file servers
-  - Wiki pages detached from the codebase
-  - Unwritten oral traditions
+**Definition**: Maintaining the SSOT as a version-controlled, continuously updated artifact that evolves synchronously with the system it governs.
 
-**Related Concepts**:
-- **Similar**: Documentation as Code, GitOps
-- **Contrast**: Waterfall documentation, Archived specs
+**Core idea**:
+- SSOT changes are reviewed like code changes.
+- SSOT must be updated before (or alongside) implementation changes.
 
-**Sources**: [R3]
+**Sources**: [R9]
 
-### Normative Keywords
+### Spec Gap
 
-**Definition**: Standardized meanings for requirement levels used across all SSOT-governed documents in this repository.
+```yaml
+id: spec-gap
+kind: definition
+status: stable
+owner: repo-orchestrator
+source_refs: []
+changed_in: 2025-12-17T11:46:50Z
+```
 
-- **MUST / MUST NOT**: Non-negotiable requirements for repositories that claim full compliance with this specification. Deviations are permitted only with explicit justification recorded in the project's root `SSOT.md` (or equivalent) and, when relevant, linked migration guidance.
-- **SHOULD / SHOULD NOT**: Strong recommendations. Teams MAY diverge if they document the rationale and expected impact in their project `SSOT.md` or relevant `PLAN.md`.
-- **MAY**: Optional behavior with no direct compliance impact.
+**Definition**: A required definition/constraint is missing or ambiguous in the Project SSOT, preventing safe implementation.
 
-These terms are used consistently in companion guides such as `docs/EXEC_PLAN.md`, `docs/README_AND_AGENTS.md`, and language-specific standards.
+**Required handling**:
+- Agents MUST stop and produce a Spec Gap Report + clarification patch (see Agent-Specific Behavior).
 
-### [Template] Project Canonical Glossary
+### Normative Keywords (BCP 14)
 
-> *Copy this section to your root `SSOT.md` to start defining your project's truth.*
+```yaml
+id: normative-keywords
+kind: definition
+status: stable
+owner: doc-maintainer
+source_refs: [R1, R2]
+changed_in: 2025-12-17T11:46:50Z
+```
 
-#### Entity: User
-- **Definition**: A registered individual capable of logging in.
-- **Fields**:
-  - `id`: UUIDv4 (Primary Key)
-  - `email`: String (Unique, format: email)
-- **Related Policies**: Data Retention Policy (GDPR)
+The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”,
+“SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “NOT RECOMMENDED”, “MAY”, and “OPTIONAL”
+in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174)
+when, and only when, they appear in all capitals. [R1] [R2]
 
-#### Entity: Agent
-- **Definition**: An autonomous AI process assigned to specific scopes.
-- **Lifecycle**: Ephemeral (spun up per task) or Long-running (daemon).
+**Local conventions**:
+- Use uppercase keywords for normative requirements; use lowercase in plain English.
+- If a deviation from a **MUST** is necessary, record the justification in the Project SSOT (linkable, reviewable).
 
 ---
 
 ## Core Patterns
 
-### Pattern: The Root SSOT File
+### Pattern: SSOT Placement & Naming
 
-**Intent**: Establish a predictable, accessible, and authoritative location for canonical information at the repository root.
+**Intent**: Ensure agents and humans can deterministically locate the Project SSOT and avoid path/name ambiguity.
 
-**Context**: Any AI-first repository where agents and humans need a shared understanding of domain concepts and rules.
-
-**Implementation**:
+**Implementation (recommended for adopters)**:
 
 ```
 repository/
-├── SSOT.md              # 👑 The King: Canonical Definitions
-├── README.md            # 🗺️ The Map: References SSOT
-├── AGENTS.md            # 🤖 The Workforce: References SSOT
-├── docs/                # 📚 The Library: Deep dives linking to SSOT
-└── src/                 # 🏗️ The Construction: Implements SSOT
+├── SSOT.md                      # Project SSOT (definitions + contracts)
+├── AGENTS.md                    # Operational instructions for agents
+├── README.md                    # Entry point (links to SSOT + docs)
+└── docs/
+    └── SSOT_GOVERNANCE.md       # This guide (meta governance)
 ```
 
-**Key Principles**:
-- **Centralization**: One file (or directory) to rule them all.
-- **Discoverability**: Placed at root for zero-friction access.
-- **Immutability of Truth**: Other docs update to match SSOT, not vice versa.
+**Implementation (allowed alternative, used by this repository)**:
 
-**Trade-offs**:
-- ✅ **Advantages**: Zero ambiguity, easy for agents to ingest, simplified updates.
-- ⚠️ **Disadvantages**: `SSOT.md` can become large (mitigation: split into `docs/ssot/*.md` if >2000 lines).
-- 💡 **Alternatives**: Distributed docs (harder to maintain consistency).
+```
+repository/
+├── AGENTS.md
+├── README.md
+└── docs/
+    ├── SSOT.md                  # Project SSOT (also contains governance guidance)
+    └── ssot/                    # Optional split-out domain topics
+```
 
-**Sources**: [R3]
+**Split Trigger (SHOULD)**:
+- If the Project SSOT exceeds **50 KiB**, split domain topics into `docs/ssot/*.md` and link them from the SSOT index to keep ingestion/review reliable.
 
-**For AI Agents**:
-- **Split Trigger**: If `SSOT.md` exceeds 1000 lines or 50KB, suggest extracting domain-specific schemas into `docs/ssot/*.md` and linking them back to the root file.
-
----
+**Tool reality (informative)**:
+- Many agent runtimes impose instruction/document size limits; keep instruction files (e.g., `AGENTS.md`) concise and layered by scope. [R5]
+- Some tools have legacy rule file formats (e.g., Cursor `.cursorrules`); prefer `AGENTS.md` as the shared instruction file across runtimes. [R14]
 
 ### Pattern: Reference-Based Documentation
 
-**Intent**: Prevent duplication and inconsistencies by forcing downstream documentation to link to the SSOT instead of repeating information.
-
-**Context**: Writing `README.md`, API guides, or integration manuals that rely on core definitions.
+**Intent**: Prevent duplication and drift by requiring downstream documentation to reference the SSOT instead of copying definitions.
 
 **Implementation**:
 
 ```markdown
 # ❌ Anti-pattern: Duplication
-## API Configuration
 The base URL is `https://api.example.com/v1`.
-(Risk: What if SSOT says v2?)
 
 # ✅ Correct pattern: Reference
-## API Configuration
-See [SSOT.md](./SSOT.md#api-endpoints) for the current Base URL and authentication protocols.
+See [SSOT](./docs/SSOT.md#data-contract) for the canonical base URL and auth rules.
 ```
 
-**Key Principles**:
-- **Link, Don't Copy**: Hyperlinks are live; copies are dead.
-- **Contextual Context**: Provide enough context to understand *why* to click, but leave the *what* to the SSOT.
+**Link fallback**:
+- If the runtime cannot retrieve the linked SSOT section, snapshot the minimum required excerpt into the consumer document with an ISO 8601 retrieval timestamp.
 
-**Trade-offs**:
-- ✅ **Advantages**: Maintenance reduced to one location, guaranteed consistency.
-- ⚠️ **Disadvantages**: Requires navigation (clicks); agents need tool capability to read referenced files.
+### Pattern: Data Contracts as Machine-Readable Artifacts
 
-**Sources**: [R3]
+**Intent**: Make contracts executable: validate payloads, generate types, and prevent drift.
 
-**For AI Agents**:
-- When you need a canonical definition, always:
-  1. Search `SSOT.md` first.
-  2. If a `README.md` describes the same concept but without a link back to `SSOT.md`, treat it as potentially stale and prioritize `SSOT.md`.
+**Recommended structure**:
 
----
-
-### Pattern: Code Generation from SSOT
-
-**Intent**: Automate the enforcement of data contracts by generating implementation code (types, schemas) directly from the SSOT definitions.
-
-**Context**: Ensuring that TypeScript interfaces, SQL schemas, or Pydantic models strictly adhere to the documented contracts.
-
-**Implementation**:
-
-```bash
-# scripts/generate-types.sh
-# Conceptual workflow:
-# 1. Parse SSOT.md to extract JSON Schema blocks
-# 2. Use quicktype or similar tools to generate interfaces
-
-echo "Generating types from SSOT..."
-python scripts/extract_schemas.py SSOT.md > schemas.json
-quicktype -s schema schemas.json -o src/types/ssot.ts
+```
+repository/
+├── openapi/
+│   └── api.yaml                 # OpenAPI 3.1 (preferred for HTTP APIs)
+├── schemas/
+│   └── user.schema.json         # JSON Schema 2020-12 (shared models)
+└── docs/
+    └── SSOT.md                  # Governance + links + decisions
 ```
 
-**Key Principles**:
-- **Single Direction**: SSOT → Code. Never Code → SSOT (unless SSOT is auto-generated from a higher spec).
-- **Automation**: Manual syncing leads to drift.
+**Guidance**:
+- Treat OpenAPI/JSON Schema as the canonical machine-readable truth for validation and generation.
+- Use the Project SSOT to govern: ownership, change process, rationale, and high-level semantics.
 
-**Trade-offs**:
-- ✅ **Advantages**: Zero divergence between documentation and code, type safety.
-- ⚠️ **Disadvantages**: Requires tooling setup (`extract_schemas.py` implementation).
+### Pattern: Schema Embedding in Markdown (Optional)
 
-**Sources**: [R2]
+**Intent**: Enable a single-file SSOT when needed, without breaking Markdown parsing.
 
-**For AI Agents**:
-- Identify machine-readable schemas by looking for explicit code blocks.
-- **Format Example**:
-  ```markdown
-  <!-- ssot-schema:json:User -->
-  ```json
-  {
-    "type": "object",
-    "properties": { ... }
-  }
-  ```
+**Rules**:
+- Precede schema blocks with a stable marker.
+- Use a non-breaking fence when demonstrating fences inside Markdown.
 
----
+**Example (non-breaking fence)**:
 
-### Pattern: CI/CD Validation
+````markdown
+<!-- ssot-schema:json:User -->
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" }
+  },
+  "required": ["id"],
+  "additionalProperties": false
+}
+```
+````
 
-**Intent**: Enforce SSOT compliance automatically to prevent "drift" where implementation deviates from documentation.
+### Pattern: Code Generation from Contracts
 
-**Context**: Continuous Integration pipelines.
+**Intent**: Enforce contracts by generating code (types, validators) from the canonical machine-readable artifacts.
 
-**Implementation**:
+**Guidance**:
+- Prefer **OpenAPI/JSON Schema → Code** toolchains over parsing Markdown.
+- If extracting from Markdown, use a Markdown AST parser + stable markers (do not rely on grep/regex).
+
+**Representative tools (informative)**:
+- OpenAPI → TypeScript: `openapi-typescript` [R16]
+- JSON Schema → TypeScript: `json-schema-to-typescript` [R17]
+
+### Pattern: CI/CD Validation (Secure, Working Example)
+
+**Intent**: Prevent drift by failing PRs when SSOT rules are violated.
+
+**Security requirement (SHOULD)**:
+- Pin GitHub Actions to a full-length commit SHA and update via Dependabot/Renovate. [R7]
+
+**Example**:
 
 ```yaml
 # .github/workflows/validate-ssot.yml
-name: Validate SSOT Compliance
-on: [pull_request]
-steps:
-  - uses: actions/checkout@v3
-  - name: Verify Constants
-    run: |
-      # Check if API_VERSION in code matches SSOT
-      SSOT_VER=$(grep "API Version" SSOT.md | awk '{print $3}')
-      CODE_VER=$(grep "export const API_VERSION" src/config.ts | awk -F'"' '{print $2}')
-      if [ "$SSOT_VER" != "$CODE_VER" ]; then
-        echo "❌ Mismatch: SSOT says $SSOT_VER but Code says $CODE_VER"
-        exit 1
-      fi
+name: Validate SSOT
+on:
+  pull_request:
+    paths:
+      - docs/SSOT.md
+      - SSOT.md
+      - docs/ssot/**
+      - openapi/**
+      - schemas/**
+      - .github/workflows/validate-ssot.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Security: pin to a full-length commit SHA (recommended by GitHub)
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Validate SSOT structure (minimal)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path("docs/SSOT.md").read_text(encoding="utf-8")
+          required = [
+              "## Agent Contract",
+              "## TL;DR",
+              "## Canonical Definitions",
+              "## Core Patterns",
+              "## Decision Checklist",
+              "## Anti-patterns / Pitfalls",
+              "## Evaluation",
+              "## Practical Examples",
+              "## Update Log",
+              "## See Also",
+              "## References",
+          ]
+          missing = [h for h in required if h not in text]
+          if missing:
+              raise SystemExit("Missing required headings: " + ", ".join(missing))
+          if "BCP 14" not in text or "RFC 2119" not in text or "RFC 8174" not in text:
+              raise SystemExit("Missing BCP 14 / RFC references in Normative Keywords section.")
+          print("SSOT structure OK")
+          PY
 ```
 
 **Trade-offs**:
-- ✅ **Advantages**: Catches inconsistencies before merge.
-- ⚠️ **Disadvantages**: Fragile regex parsing; requires structured SSOT format. Better to use dedicated parsing scripts (see Practical Examples).
+- ✅ Works without extra dependencies (good bootstrap)
+- ⚠️ Not a full semantic validator; evolve toward structured validation (OpenAPI/JSON Schema validation, Markdown AST linting)
+
+### Pattern: Provide SSOT via MCP (Optional)
+
+**Intent**: Let agents retrieve SSOT/contracts through tools (instead of copying large text into prompts) while preserving traceability.
+
+**Guidance**:
+- Publish SSOT artifacts (Markdown + OpenAPI/JSON Schema) as MCP resources with version/commit metadata.
+- Treat the Project SSOT as authoritative; MCP is a transport layer, not a second source of truth.
+- See `docs/CODE_MCP.md` for a concrete pattern and examples. [R10]
 
 ---
 
 ## Decision Checklist
 
-- [ ] **SSOT Exists**: Is there a file named `SSOT.md` at the repository root?
-- [ ] **Unique Definitions**: Are definitions (e.g., "User") defined ONLY in SSOT and referenced elsewhere?
-- [ ] **Schema Completeness**: Do data contracts include types, constraints, and examples?
-- [ ] **Policy Clarity**: Are policies (e.g., "Retention") specific and measurable?
-- [ ] **Agent Accessible**: Is the format Markdown, structured with clear headers for AI parsing?
-- [ ] **Version Controlled**: Is the SSOT part of the Git repository?
-- [ ] **Update Process**: Is "Update SSOT" a required step in the PR checklist?
+- [ ] **SSOT-CHK-001 (Single path)**: The Project SSOT path is declared (and unambiguous).
+- [ ] **SSOT-CHK-002 (Type-based precedence)**: `AGENTS.md` instructions do not redefine or contradict SSOT definitions/contracts.
+- [ ] **SSOT-CHK-003 (BCP 14)**: Normative Keywords section includes the BCP 14 boilerplate and is referenced by other specs.
+- [ ] **SSOT-CHK-004 (Contracts are machine-readable)**: APIs/schemas are represented as OpenAPI 3.1 and/or JSON Schema where applicable.
+- [ ] **SSOT-CHK-005 (No duplication)**: Other docs reference SSOT instead of copying canonical values.
+- [ ] **SSOT-CHK-006 (Drift protection)**: CI validates SSOT structure and (when present) validates OpenAPI/JSON Schema files.
+- [ ] **SSOT-CHK-007 (Secure CI)**: GitHub Actions are pinned to full commit SHAs.
+- [ ] **SSOT-CHK-008 (Living governance)**: Changes to SSOT require review and are updated alongside implementation changes.
 
 ---
 
@@ -340,37 +443,35 @@ steps:
 
 **Symptom**: `README.md` says API v1, `docs/api.md` says API v2, and code uses v1.5.
 
-**Why It Happens**: Laziness or lack of governance; developers update the file closest to them.
-
 **Impact**:
-- AI agents hallucinate or generate incorrect code.
-- New developers are confused.
-- Integration bugs arise from mismatched assumptions.
+- Agents generate incorrect code.
+- Humans lose trust in documentation.
 
-**Solution**: Designate `SSOT.md` as the master. Delete definitions from other files and replace with links.
+**Solution**: Designate exactly one Project SSOT. Delete conflicting definitions elsewhere and replace them with links.
 
 ### Anti-pattern: Implementation as SSOT
 
 **Symptom**: "The code is the documentation."
 
-**Why It Happens**: Belief that code is the only thing that matters (true for execution, false for understanding).
-
 **Impact**:
-- Business logic becomes opaque.
-- Non-engineers (and AI agents needing high-level context) cannot understand system behavior without reading all code.
-- "Why" is lost, only "How" remains.
+- "Why" disappears.
+- Contracts become implicit and unreviewable.
 
-**Solution**: Extract contracts and policies to `SSOT.md`. Code should *implement* the truth, not *be* the only record of it.
+**Solution**: Extract contracts and policies into the SSOT; code implements the SSOT.
 
 ### Anti-pattern: Stale SSOT
 
-**Symptom**: SSOT defines fields that were removed from the database 6 months ago.
+**Symptom**: SSOT defines fields that were removed months ago.
 
-**Why It Happens**: Documentation updates are not enforced during code review.
+**Solution**: Enforce SSOT updates in PR review and CI checks.
 
-**Impact**: Trust in documentation erodes; developers stop reading it.
+### Anti-pattern: Stringly-Typed Compliance
 
-**Solution**: CI/CD validation and strict PR checklists ("No merge without SSOT update").
+**Symptom**: Governance is enforced via grep/awk on Markdown prose.
+
+**Impact**: Validation breaks on formatting changes and encourages “gaming the checker”.
+
+**Solution**: Prefer structured artifacts (OpenAPI/JSON Schema) and AST-based linting for Markdown when extraction is required.
 
 ---
 
@@ -378,32 +479,50 @@ steps:
 
 ### Metrics
 
-**SSOT Coverage**: Percentage of domain terms/schemas defined in SSOT vs. scattered.
-- **Target**: 100% of core entities defined in SSOT.
-- **Measurement**: Grep for entity names across `docs/` and check for definitions vs references.
+- **SSOT Coverage**: % of core entities/policies defined in the Project SSOT.
+  - Target: 100% for core entities and safety-critical policies.
+- **Documentation Drift**: # of mismatches between SSOT and implementation/contracts.
+  - Target: 0; measured on every PR.
+- **Spec Gap Rate**: Frequency of missing/ambiguous definitions that block safe work.
+  - Target: decreasing over time; measured via Spec Gap Reports.
 
-**Documentation Drift**: Number of discrepancies between SSOT and implementation.
-- **Target**: 0.
-- **Measurement**: Automated scripts (Pattern: CI/CD Validation).
-- **Frequency**: On every Pull Request.
+### Agent Telemetry (Implementable)
 
-**Agent Hallucination Rate**: Frequency of AI agents asking clarifying questions about basic terms.
-- **Target**: Low.
-- **Measurement**: Review agent interaction logs.
+**Collection points (informative)**:
+- PR comments (structured block)
+- CI artifacts (`telemetry/*.json`)
+- Agent run logs (JSON lines)
 
-**Agent Telemetry Fields** (for SSOT quality):
-- `unknown_term`: The term the agent could not resolve from SSOT.
-- `requested_definition`: Whether the agent explicitly asked for a new definition.
-- `ssot_version`: Commit hash of `SSOT.md` used at the time.
+**Minimal telemetry schema (example)**:
 
-### Testing Strategies
+```json
+{
+  "ssot_document_id": "docs/SSOT.md",
+  "ssot_commit": "<git-sha>",
+  "unknown_terms": ["<term>"],
+  "sections_cited": ["Canonical Definitions > Data Contract"],
+  "spec_gaps": ["<missing_key>"]
+}
+```
 
-**Manual Review**:
-- Check `SSOT.md` freshness during Sprint Retrospectives.
+**Optional JSON Schema (example)**:
 
-**Automated Testing**:
-- **Link Checker**: Ensure all links in `README.md` pointing to `SSOT.md` are valid.
-- **Schema Validator**: Extract JSON schemas from SSOT and validate sample data payloads.
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentTelemetryEvent",
+  "type": "object",
+  "properties": {
+    "ssot_document_id": { "type": "string" },
+    "ssot_commit": { "type": "string" },
+    "unknown_terms": { "type": "array", "items": { "type": "string" } },
+    "sections_cited": { "type": "array", "items": { "type": "string" } },
+    "spec_gaps": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["ssot_document_id", "ssot_commit"],
+  "additionalProperties": false
+}
+```
 
 ---
 
@@ -411,64 +530,78 @@ steps:
 
 ### Migration Guide: From Chaos to SSOT
 
-**Intent**: A phased approach to introducing SSOT into an existing repository with scattered documentation and "tribal knowledge."
+**Intent**: Introduce SSOT into an existing repository with scattered documentation and implicit contracts.
 
-**Phase 1: The Audit (Day 1-2)**
-- **Goal**: Identify all "sources of truth" currently in use.
-- **Actions**:
-  - Scan `README.md`, Wiki, Google Docs, and Slack pins.
-  - Grep code for hardcoded constants (e.g., `const API_URL = ...`).
-  - List conflicting definitions (e.g., "User" means "Subscriber" in DB but "Visitor" in Analytics).
+**Phase 1: Audit (Day 1–2)**
+- Identify all current sources of truth (README, wiki, docs, code constants, schemas).
+- List conflicts and decide which should become canonical.
 
-**Phase 2: The Golden Record (Day 3)**
-- **Goal**: Create the initial `SSOT.md` artifact.
-- **Actions**:
-  - Create `docs/SSOT.md` from template.
-  - Define the top 5 most critical terms/schemas.
-  - **Crucial**: Do not try to document everything. Start with the most painful ambiguities.
+**Phase 2: Establish the Project SSOT (Day 3)**
+- Choose and declare the Project SSOT path (RECOMMENDED: `/SSOT.md`).
+- If you keep this governance guide under `docs/`, rename it to avoid confusion (e.g., `docs/SSOT_GOVERNANCE.md`).
+- Define the top 5 most critical terms/schemas first.
 
-**Phase 3: The Refactor (Week 2)**
-- **Goal**: Point consumers to the SSOT.
-- **Actions**:
-  - Replace definitions in `README.md` with links to `SSOT.md`.
-  - Create a `types/ssot.ts` or similar shared constants file derived from (or manually synced with) SSOT.
-  - Deprecate conflicting documentation.
+**Phase 3: Refactor Consumers (Week 2)**
+- Replace duplicated definitions in `README.md` and `docs/` with links to the SSOT.
+- Move executable contracts to OpenAPI/JSON Schema files and link them from SSOT.
 
-**Phase 4: The Moat (Week 3+)**
-- **Goal**: Prevent regression.
-- **Actions**:
-  - Add "Update SSOT" to Pull Request template.
-  - Implement basic CI/CD checks (see Core Patterns).
+**Phase 4: Prevent Regression (Week 3+)**
+- Add an SSOT checklist to PR templates.
+- Add CI validation (start minimal; evolve toward structured validation).
 
 ---
 
 ## Update Log
 
-- **2025-11-22** – Integrated AI peer review feedback: Added Agent-Specific Behavior, Security Protocols, Project Glossary Template, and Agent Telemetry Fields. Clarified distinction between Guide and Project SSOT. (Author: AI-First)
-- **2025-11-22** – Added `Practical Examples` section with Migration Guide. Refined CI/CD pattern trade-offs. Updated metadata. (Author: AI-First)
-- **2025-11-19** – Created `docs/SSOT.md` with comprehensive guide structure, integrating definitions, core patterns, and evaluation metrics based on `ssot-guide.md`. (Author: AI-First)
-- **2025-11-01** – Initial reference content from `ssot-guide.md` covering 12-Factor App and Docs-as-Code principles.
+- 2025-12-17T11:46:50Z docs(ssot): Refresh for 2025: resolve placement ambiguity, adopt BCP 14, modernize CI example (actions/checkout v6 + SHA pinning), clarify Data Contracts (OpenAPI 3.1 / JSON Schema), add deterministic agent templates. (Author: SSOT Admin)
+- 2025-11-24T00:00:00Z docs(ssot): Metadata refresh and minor clarifications. (Author: AI-First)
+- 2025-11-22T00:00:00Z docs(ssot): Integrated AI peer review feedback: Agent-Specific Behavior, Security Protocol, glossary template, telemetry fields; clarified guide vs project SSOT. (Author: AI-First)
+- 2025-11-19T00:00:00Z docs(ssot): Initial comprehensive guide structure integrating definitions, patterns, and evaluation metrics. (Author: AI-First)
+- 2025-11-01T00:00:00Z docs(ssot): Seed content based on Docs-as-Code and configuration best practices. (Author: AI-First)
 
 ---
 
 ## See Also
 
 ### Prerequisites
-- [Documentation as Code](https://www.writethedocs.org/guide/docs-as-code/) – Understanding docs as engineering artifacts
-- [Git Branching Model](https://nvie.com/posts/a-successful-git-branching-model/) – Managing version control for documentation
+- [BCP 14 / RFC 2119 + RFC 8174](https://datatracker.ietf.org/doc/rfc8174/) – Normative keyword interpretation
+- [Secure use of GitHub Actions](https://docs.github.com/en/actions/reference/security/secure-use) – Supply chain hardening and pinning guidance
+- [OpenAPI 3.1 release note](https://www.openapis.org/blog/2021/02/18/openapi-specification-3-1-released) – OpenAPI 3.1 and JSON Schema alignment
+- [Docs as Code](https://www.writethedocs.org/guide/docs-as-code.html) – Treat documentation as an engineering artifact
+- [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow) – Lightweight branching model suitable for frequent SSOT updates
+- [Trunk-based development](https://trunkbaseddevelopment.com/) – Alternative branching model optimized for small, frequent merges
+- [A successful Git branching model (Git Flow)](https://nvie.com/posts/a-successful-git-branching-model/) – Historical reference; may be less suitable for high-frequency SSOT changes
 
-### Related Topics
-- [README_AND_AGENTS.md](./README_AND_AGENTS.md) – How SSOT supports the agent ecosystem
-- [CODE_MCP.md](./CODE_MCP.md) – Implementing SSOT schemas in code
+### Related Topics (in-repo)
+- [README_AGENTS.md](./README_AGENTS.md) – How SSOT supports the agent ecosystem
 - [EXEC_PLAN.md](./EXEC_PLAN.md) – Task planning methodology using SSOT definitions
+- [CODE_MCP.md](./CODE_MCP.md) – Exposing SSOT/contracts via MCP
+- [TYPESCRIPT_SET.md](./TYPESCRIPT_SET.md) – Language-specific standard (references SSOT for definitions)
 
 ---
 
 ## References
 
-- [R1] Wikipedia. "Single source of truth." https://en.wikipedia.org/wiki/Single_source_of_truth (accessed 2025-10-23)
-- [R2] The Twelve-Factor App. "III. Config." https://12factor.net/config (accessed 2025-10-23)
-- [R3] Write the Docs. "Documentation as Code." https://www.writethedocs.org/guide/docs-as-code/ (accessed 2025-10-23)
+### Normative References
+- [R1] IETF. RFC 2119: "Key words for use in RFCs to Indicate Requirement Levels." https://datatracker.ietf.org/doc/rfc2119/
+- [R2] IETF. RFC 8174: "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words." https://datatracker.ietf.org/doc/rfc8174/
+- [R3] OpenAPI Initiative. "OpenAPI Specification 3.1.0 Released." https://www.openapis.org/blog/2021/02/18/openapi-specification-3-1-released
+- [R4] JSON Schema. "Draft 2020-12." https://json-schema.org/draft/2020-12/json-schema-core.html
+- [R5] OpenAI. "Custom instructions with AGENTS.md." https://developers.openai.com/codex/guides/agents-md/
+- [R6] agents.md. "AGENTS.md." https://agents.md/
+- [R7] GitHub Docs. "Secure use reference." https://docs.github.com/en/actions/reference/security/secure-use
+
+### Informative References
+- [R8] Wikipedia. "Single source of truth." https://en.wikipedia.org/wiki/Single_source_of_truth
+- [R9] Write the Docs. "Docs as Code." https://www.writethedocs.org/guide/docs-as-code.html
+- [R10] Model Context Protocol. "Specification (2025-11-25)." https://modelcontextprotocol.io/specification/2025-11-25
+- [R11] GitHub Docs. "GitHub Flow." https://docs.github.com/en/get-started/using-github/github-flow
+- [R12] Trunk Based Development. https://trunkbaseddevelopment.com/
+- [R13] nvie. "A successful Git branching model." https://nvie.com/posts/a-successful-git-branching-model/
+- [R14] Cursor Docs. "Rules." https://cursor.com/docs/context/rules
+- [R15] GitHub. `actions/checkout`. https://github.com/actions/checkout
+- [R16] GitHub. `openapi-typescript`. https://github.com/openapi-ts/openapi-typescript
+- [R17] GitHub. `json-schema-to-typescript`. https://github.com/bcherny/json-schema-to-typescript
 
 ---
 
