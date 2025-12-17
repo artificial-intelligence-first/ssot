@@ -26,6 +26,7 @@ def rewrite_links(name: str, content: str) -> str:
         content = content.replace("./LICENSE", "https://github.com/artificial-intelligence-first/ssot/blob/main/LICENSE")
     if name == "AGENTS.md":
         content = content.replace("./docs/", "")
+        content = content.replace("./README.md", "index.md")
     return content
 
 for target, source_path in SOURCES.items():

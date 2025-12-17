@@ -1,51 +1,171 @@
 ---
-title: ExecPlan and PLAN.md
+title: Exec Plan
 slug: exec-plan
-summary: "AI-driven task management"
+summary: "Model-agnostic execution planning for long-running agent work"
 type: spec
-tags: [topic, ai-first, agent, planning, execution, all-model]
-last_updated: 2025-11-24
+tags: [topic, ai-first, agent, planning, execution, model-agnostic, mcp, a2a, tool-governance]
+last_updated: 2025-12-17
 ---
 
-# Topic: ExecPlan and PLAN.md — Model-Agnostic Execution Planning for AI-Driven Development
+# Topic: Exec Plan — Model-Agnostic Execution Planning
 
 ## Agent Contract
 
 - **PURPOSE**:
-  - Define a vendor-neutral specification for long-running AI agent task management using living Markdown documents
-  - Enable coding agents (OpenAI Codex, Claude, GPT-5, Gemini, etc.) to autonomously execute multi-hour complex tasks
-  - Maintain comprehensive context and progress tracking across extended development sessions
+  - Define a vendor-neutral specification for long-running AI agent task management using living Markdown plan documents
+  - Make execution safe, resumable, and auditable through explicit constraints, evidence capture, and continuous plan updates
+  - Enable multi-agent collaboration without losing coherence or violating tool governance
+  - Examples of compatible runtimes (non-normative): OpenAI Codex, Claude Code, Gemini, internal agent runners
 - **USE_WHEN**:
-  - Implementing complex features requiring multiple hours or days of work
-  - Managing AI agent sessions that span multiple context windows
-  - Coordinating work across different AI models and development environments
-  - Building self-contained task specifications for autonomous execution
+  - Work is non-trivial: multi-step, cross-cutting, or requires coordination across subsystems
+  - Work is interruption-prone: spans multiple sessions, context windows, handoffs, or multiple agents
+  - Work is risky: includes irreversible operations, security-sensitive changes, production-adjacent actions, or unknowns
+  - Work must be reproducible: acceptance must be demonstrable by commands + expected outputs
 - **DO_NOT_USE_WHEN**:
-  - Simple single-file edits or trivial changes
-  - Tasks completable in under 30 minutes
-  - Projects without AI agent involvement
-  - Real-time collaborative editing where multiple humans are actively working
+  - Trivial edits that can be completed safely in one short sitting without meaningful risk
+  - Exploratory tinkering where you will not preserve state, evidence, or outcomes
+  - Real-time multi-human co-editing where a living single-writer plan cannot be maintained
 - **PRIORITY**:
-  - ExecPlan methodology takes precedence over ad-hoc task management when working with AI agents
-  - For execution, the self-containment requirement overrides external documentation references, while long-lived definitions and schemas remain mastered in the project root `SSOT.md`
-  - Living document updates are mandatory, not optional
+  - Self-containment and safety override convenience; if a plan is not self-contained, it is non-compliant
+  - The plan is a living document; updates to living sections are mandatory as work progresses
+  - “Text is not truth”: validate state with tools/tests and capture evidence rather than relying on descriptions
+  - Normative terms (MUST/SHOULD/MAY) follow `docs/SSOT.md`
 - **RELATED_TOPICS**:
-  - agents-md
-  - task-decomposition
-  - context-management
-  - ai-driven-development
+  - ssot-guide
+  - agents-readme
+  - code-mcp
+  - agent-skill
 
 In this repository, agents that apply this specification in practice (for example `repo-orchestrator` and `doc-maintainer`) are defined in `AGENTS.md`.
+
+### Decision Tree (MUST)
+
+Use an ExecPlan if ANY of the following is true:
+- Expected agent work is >30 minutes OR involves >5 non-trivial steps
+- Touches multiple subsystems (e.g., UI + API + DB), or requires a refactor with wide blast radius
+- Includes operations that may be irreversible or security-sensitive (data loss, auth, payments, production deploy)
+- Requires external research / unknowns where assumptions are likely to change
+- Requires multi-agent work, a handoff, or spans multiple sessions/context windows
+
+Otherwise, use a lightweight task list.
+
+### Read–Update Loop (MUST)
+
+1. Read the plan end-to-end (including Constraints/Safety and Validation).
+2. Execute only the `Next Action` (smallest safe step).
+3. Immediately update the living sections (Progress, Surprises, Decision Log, Outcomes when relevant) and bump `updated`.
+4. Repeat.
+
+### Stop / Escalation Conditions (MUST)
+
+Stop execution and update the plan when:
+- You hit 3 consecutive failed attempts at the same step without new evidence
+- A constraint or safety rule would be violated
+- The plan’s assumptions are invalidated (requires plan revision)
+- A human approval gate is reached (see `Constraints & Safety` and `Tooling Interface & Governance`)
+
+### Integration with Agent Instruction Files (MUST)
+
+Many runtimes rely on repo instruction files (for example `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`).
+When executing a plan:
+- **Precedence**: runtime/system instructions > scoped repo instruction files > PLAN.md constraints > this spec
+- Always follow the strictest applicable constraint; precedence only resolves direct conflicts.
+- If instructions conflict, stop and record the conflict under `Surprises & Discoveries` with evidence.
 
 ---
 
 ## TL;DR
 
-- **WHAT**: ExecPlan is a structured Markdown-based methodology for managing multi-hour AI-driven development tasks through living documents that agents continuously update
-- **WHY**: Enables AI agents to maintain context, track progress, and autonomously complete complex tasks without losing state across sessions or context windows
-- **WHEN**: Use for any development task requiring >30 minutes of AI agent work, complex features, significant refactors, or multi-step implementations
-- **HOW**: Create a PLAN.md file based on the **Standard ExecPlan Schema** (sections marked as MUST are required for full compliance), including Safety Constraints, and maintain it as work progresses.
-- **WATCH_OUT**: Never rely on external documentation links for execution; all necessary knowledge must be embedded. Ensure strict adherence to ISO 8601 timestamps.
+- **WHAT**: ExecPlan is a self-contained, living plan document for executing complex tasks safely over long durations.
+- **WHY**: Prevents state loss across sessions/agents, improves reproducibility, and makes decisions auditable.
+- **WHEN**: Use when complexity/risk/interruption likelihood is high (not only “time spent”).
+- **HOW**: Write a PLAN that follows the Standard ExecPlan Schema, declare tool governance, execute stepwise, and continuously update living sections.
+- **WATCH_OUT**: Do not rely on external URLs for execution; snapshot required knowledge into the plan with timestamps and evidence.
+
+---
+
+## Naming & File Conventions (MUST)
+
+This spec distinguishes policy files from per-task plan files.
+
+- `docs/EXEC_PLAN.md`: This specification (policy + schema). It is not a per-task plan.
+- `PLAN.md`: A per-task ExecPlan document (living). The file may be named differently (e.g., `plans/<task>-PLAN.md`), but it MUST follow this schema.
+- `PLANS.md`: Optional repo-root “planning policy pointer” used by some runtimes; SHOULD link to `docs/EXEC_PLAN.md` and declare repo defaults (profiles, tool allowlists).
+
+**Recommended location for per-task plans**:
+- `plans/<yyyy-mm-dd>-<task-slug>-PLAN.md` (or `plans/<task-slug>-PLAN.md`)
+
+**Path assumptions**:
+- This document assumes it lives at `docs/EXEC_PLAN.md`.
+- Internal doc links are displayed as repo-root paths (e.g., `docs/SSOT.md`) but may link via local relative paths for rendering.
+
+---
+
+## Absolute Requirements (NON-NEGOTIABLE)
+
+Any ExecPlan claiming compliance with this spec MUST satisfy ALL of the following. (Derived from and aligned with PLANS.md-style guidance; see [R1].)
+
+1) **Complete Self-Containment**
+   - No external URL is required to execute the plan.
+   - External research is allowed, but all execution-critical knowledge MUST be snapshotted into the plan with retrieval timestamp and source. [R1]
+
+   Example snapshot format (recommended):
+
+   ```markdown
+   Research Snapshot
+   - Retrieved: 2025-11-22T14:05:00Z
+   - Source: https://example.com/spec
+   - Notes: <only what is required to execute, in your own words>
+   ```
+
+2) **Living Document Obligation**
+   - `Progress`, `Surprises & Discoveries`, `Decision Log`, `Outcomes & Retrospective` MUST be updated as work proceeds. [R1]
+
+3) **Novice Executability**
+   - Assume the executor has only the repo working tree + this plan and no prior memory. [R1]
+
+4) **Observable Working Behavior**
+   - Acceptance MUST be phrased as verifiable behavior (commands + expected outputs), not intentions. [R1]
+
+5) **Tool-Grounded Truth**
+   - Do not trust descriptions (including the plan itself) over verified tool outputs/tests; record evidence. [R6]
+
+6) **Safety & Governance**
+   - The plan MUST declare tool permissions, approval-required operations, and forbidden operations. [R2]
+
+7) **Secrets & Sensitive Data Hygiene**
+   - Secrets/PII MUST NOT be embedded in the plan or logs; redact and use placeholders. [R2]
+
+---
+
+## Formatting Rules (Compatibility Profiles)
+
+ExecPlans are consumed by both humans and agent runtimes. Choose a compatibility profile and stick to it.
+These rules apply to per-task PLAN files; this spec may use additional Markdown for exposition.
+
+### Timestamp Format (MUST)
+
+- Use RFC 3339 / ISO 8601 timestamps:
+  - Recommended (UTC): `YYYY-MM-DDTHH:MM:SSZ`
+  - Allowed (local offset): `YYYY-MM-DDTHH:MM:SS+09:00`
+- Do NOT use ambiguous formats like `YYYY-MM-DD HH:MM`.
+
+### Profile: Codex-Compatible Strict Mode (`codex-strict`) (SHOULD) [R1]
+
+- **Prose-first**: Prefer paragraphs and bullet lists; avoid tables and HTML.
+- **Checklists**: Use checkboxes only in `Progress`. Use bullets elsewhere.
+- **Code blocks**: Avoid nested fences; keep snippets short; prefer inline commands like `npm test`.
+- **External links**: Do not place execution-critical external URLs in the plan body; if research is required, snapshot the needed content into the plan with timestamp + source URL. Local URLs used only for validation (e.g., `http://localhost:3000/...`) are allowed.
+
+### Profile: Repo-Native Mode (`repo-native`) (MAY)
+
+- GitHub-friendly Markdown (tables, `<details>`) is allowed, but must remain copy-pastable and must not hide required information behind collapsibles.
+- Still follow the self-containment, timestamp, and section-order rules.
+
+### Plan Mutability Rules (MUST) [R1]
+
+- **Minor edits** (typos, clarity, formatting) are allowed without a revision entry.
+- **Meaning changes** (scope, milestones, acceptance, safety constraints, tool permissions) MUST follow the Plan Revision Workflow and be recorded with evidence and rationale.
 
 ---
 
@@ -53,514 +173,510 @@ In this repository, agents that apply this specification in practice (for exampl
 
 ### ExecPlan
 
-**Definition**: A self-contained, living Markdown document that serves as both specification and execution guide for AI agents performing complex multi-hour development tasks.
+**Definition**: A self-contained, living plan document that serves as both specification and execution guide for long-running agent work, updated continuously as execution proceeds. [R1]
 
 **Scope**:
 - **Includes**:
-  - Complete task specification with acceptance criteria
-  - Progress tracking with timestamped checkboxes
-  - Decision logging and discovery documentation
-  - All necessary context and knowledge embedded
-  - Recovery and rollback strategies
+  - Purpose + context + constraints + acceptance criteria
+  - Explicit tooling permissions and approval gates
+  - Living sections (Progress/Surprises/Decisions/Outcomes)
+  - Recovery paths and evidence capture
 - **Excludes**:
-  - External documentation dependencies
-  - Undefined technical jargon
-  - Implementation details without user-visible outcomes
-  - Static requirements that never update
+  - “Go read this URL” as required execution knowledge
+  - Hidden assumptions (“obvious” project conventions not written down)
+  - Non-verifiable completion claims
 
 **Related Concepts**:
-- **Similar**: Project plans, technical specifications, runbooks
-- **Contrast**: Simple TODO lists, static requirements documents, issue tickets
-- **Contains**: Milestones, concrete steps, validation criteria, living sections
+- **Similar**: Runbooks, technical specs, project plans
+- **Contrast**: TODO lists, issue tickets, static requirement docs
+- **Contains**: Milestones, concrete steps, validation, decision history
 
 **Example**:
 
 ```markdown
-# ExecPlan: Implement OAuth2 Authentication
+# PLAN: Implement OAuth2 Authentication
 
-## Purpose/Big Picture
-Enable users to sign in using Google OAuth2, visible as a "Sign in with Google"
-button that redirects to Google and returns authenticated users to the dashboard.
+## Purpose / Big Picture
+Enable users to sign in using Google OAuth2. Visible behavior: a “Sign in with Google” button,
+Google redirect, and a logged-in dashboard session on return.
 
 ## Progress
-- [x] 2025-11-16 14:00 - Read existing auth implementation
-- [x] 2025-11-16 14:15 - Set up Google OAuth2 credentials
-- [ ] Implement OAuth2 callback handler
-- [ ] Add session management
+Status: IN_PROGRESS
+Next Action: Implement OAuth2 callback handler.
+
+- [x] 2025-11-16T14:00:00Z - Read existing auth implementation (Author: Agent-007)
+- [x] 2025-11-16T14:10:00Z - Identified current session storage and cookie settings (Author: Agent-007)
+- [ ] 2025-11-16T14:20:00Z - Implement OAuth2 callback handler (Owner: Agent-007)
 
 ## Surprises & Discoveries
-- 2025-11-16 14:10 - Existing auth uses JWT, need to integrate OAuth2 tokens
-  with JWT session management (evidence: auth.ts:42 shows JWT implementation)
+- 2025-11-16T14:12:00Z - Existing auth uses JWT + cookie sessions; OAuth2 must integrate without breaking refresh flows.
+  Evidence: `src/auth/session.ts:42`
 ```
 
 **Sources**: [R1]
 
-### Living Document Sections
+### PLAN.md
 
-**Definition**: Four mandatory sections in every ExecPlan that must be continuously updated throughout task execution to maintain accurate state and learnings.
+**Definition**: A per-task ExecPlan document (often named `PLAN.md`) that follows the Standard ExecPlan Schema and is updated during execution. [R1]
 
 **Scope**:
-- **Includes**:
-  - **Progress**: Granular checkbox lists with timestamps
-  - **Surprises & Discoveries**: Unexpected findings with evidence
-  - **Decision Log**: Choices made with rationale and attribution
-  - **Outcomes & Retrospective**: Achievement summary and lessons
-- **Excludes**:
-  - Static requirements that never change
-  - Placeholders without actual content
-  - Sections added but never maintained
-
-**Related Concepts**:
-- **Similar**: Agile sprint retrospectives, decision records, progress reports
-- **Contrast**: Fixed specifications, waterfall documentation
-- **Contains**: Timestamps (ISO 8601), evidence, rationale, attribution
-
-**Example**:
-
-```markdown
-## Decision Log
-- 2025-11-16T14:20:00Z - Chose to use passport.js over manual OAuth2 implementation
-  Rationale: Well-tested, reduces security risks, 5 minutes vs 2 hours
-  Author: AI Agent (Claude)
-
-- 2025-11-16T14:35:00Z - Storing refresh tokens in encrypted database column
-  Rationale: Enables offline access, follows security best practices
-  Author: AI Agent (Claude)
-```
+- **Includes**: One task’s end-to-end plan, constraints, steps, validation, and living updates
+- **Excludes**: Repo-wide policy and global governance (belongs in `docs/SSOT.md` / `PLANS.md`)
 
 **Sources**: [R1]
 
-### Self-Containment Principle
+### PLANS.md
 
-**Definition**: The requirement that an ExecPlan must contain all knowledge, context, and instructions necessary for successful implementation without any external references.
+**Definition**: An optional repo-level planning policy file consumed by some agent runtimes; it points to the canonical planning spec and may define default profiles and allowlists. [R1]
 
 **Scope**:
-- **Includes**:
-  - Embedded code examples instead of links
-  - Defined terminology for all technical terms
-  - Complete context about current system state
-  - Full command sequences with expected outputs
-- **Excludes**:
-  - Links to external documentation as *primary* source (See Also links are for learning only, not execution)
-  - Assumptions about prior knowledge
-  - References to undefined concepts
-  - Incomplete instructions requiring outside research
-
-**Related Concepts**:
-- **Similar**: Hermetic builds, reproducible research, literate programming
-- **Contrast**: Link-heavy documentation, reference manuals, tutorial series
-- **Contains**: Embedded knowledge, complete context, defined terms
-
-**Example**:
-
-```markdown
-## Context and Orientation
-The application currently uses session-based authentication with Express.js.
-Sessions are stored in PostgreSQL using connect-pg-simple. The auth flow:
-
-1. User submits credentials to POST /api/login
-2. Server validates against bcrypt hashes in users table
-3. Session created with user_id stored
-4. Session cookie sent to browser
-
-OAuth2 will ADD to this by providing an alternative path through Google.
-
-Technical terms:
-- OAuth2: Protocol where users authenticate via Google, not our passwords
-- JWT: JSON Web Token, a signed JSON object used as auth credential
-- Refresh token: Long-lived token to get new access tokens without re-login
-```
+- **Includes**: Defaults (profiles, tool allowlists), pointers to `docs/EXEC_PLAN.md`, and repo-specific conventions
+- **Excludes**: Per-task progress and decision history (belongs in PLAN files)
 
 **Sources**: [R1]
+
+### Context Snapshot
+
+**Definition**: A compact, high-signal summary embedded in the plan that enables reliable resumption after context refresh or handoff. [R5]
+
+**Scope**:
+- **Includes**: current status, next action, key decisions, blockers, and evidence pointers
+- **Excludes**: raw logs and tool output dumps (store elsewhere; summarize here)
+
+**Sources**: [R5]
+
+### Evidence
+
+**Definition**: A minimal, reproducible record that supports a claim (a command, where it ran, and the relevant output/file pointer). [R6]
+
+**Scope**:
+- **Includes**: command, working directory, outcome, and a small output excerpt or file path
+- **Excludes**: secrets, PII, and large uncurated logs
+
+**Sources**: [R6]
+
+### MCP (Model Context Protocol)
+
+**Definition**: A protocol for standardizing model access to tools and data via servers, with emphasis on tool safety and user consent/controls. [R2]
+
+**Scope**:
+- **Includes**: declaring allowed servers/tools, bounding filesystem/network access, and approval gates
+- **Excludes**: assuming tool descriptions are trustworthy without verification
+
+**Sources**: [R2]
+
+### A2A (Agent-to-Agent)
+
+**Definition**: An interoperability approach for agent-to-agent messaging designed to complement tool/data protocols (like MCP) for long-running coordinated work. [R3]
+
+**Scope**:
+- **Includes**: structured inter-agent messages and coordination over long tasks
+- **Excludes**: unlogged, ephemeral chat as the only coordination mechanism
+
+**Sources**: [R3]
 
 ### Relationship to SSOT
 
-ExecPlans are self-contained specifications for individual tasks, while the project root `SSOT.md` remains the canonical source for long-lived definitions, schemas, and policies. When an ExecPlan needs those definitions:
-- It MAY embed only the parts required for the task as a local snapshot, but SHOULD always include a link back to the canonical section in `SSOT.md`.
-- In case of any discrepancy between an embedded snapshot and `SSOT.md`, the SSOT definition is authoritative and the ExecPlan MUST be updated to match.
-- If an ExecPlan reveals a missing or ambiguous definition in `SSOT.md`, treat this as a specification gap and propose an update to `SSOT.md` alongside plan changes.
+ExecPlans are self-contained specifications for individual tasks, while `docs/SSOT.md` is the canonical source for long-lived definitions, schemas, and policies in this repository.
+
+- A plan MAY embed only the parts required for the task as a local snapshot, but SHOULD link to the canonical location.
+- If a snapshot diverges from canonical SSOT, the plan MUST be updated to match SSOT, or SSOT must be updated via a documented change process.
+- If the plan reveals a missing or ambiguous SSOT definition, record it as a spec gap and propose an SSOT update alongside the plan work.
 
 ---
 
 ## Core Patterns
 
-### Pattern: Standard ExecPlan Schema
+### Pattern: Standard ExecPlan Schema (MUST)
 
-**Intent**: Enforce a strict, consistent structure across all ExecPlans to ensure machine-readability, safety, and completeness.
+**Intent**: Enforce a strict, consistent plan structure so agents can parse, execute safely, and resume reliably. [R1]
 
-**Context**: Every time an ExecPlan is created.
+**Context**: Every per-task PLAN file.
 
 **Implementation**:
 
-ExecPlans that claim compliance with this specification **MUST** include all sections marked `(MUST)` in the following schema structure. Other sections are strongly recommended (`SHOULD`). Normative terms (MUST/SHOULD/MAY) follow the definitions in `docs/SSOT.md`.
+Plans that claim compliance with this spec MUST include all sections marked `(MUST)` in the order below. Sections marked `(MUST if ...)` are conditional requirements.
 
 ```markdown
-# ExecPlan: <Feature Name>
+---
+id: <stable-id>
+status: DRAFT | IN_PROGRESS | BLOCKED | DONE | ABANDONED
+owner: <human-or-agent-id>
+created: 2025-11-22T14:00:00Z
+updated: 2025-11-22T14:00:00Z
+profile: codex-strict | repo-native
+---
+
+# PLAN: <Task Name>
 
 ## Purpose / Big Picture (MUST)
-<What to achieve. User perspective. 1-3 paragraphs.>
-
-## Context and Orientation (MUST)
-<Current architecture, related files, key term definitions.>
-
-## Constraints & Safety (MUST)
-- **Allowed Directories**: `src/**`, `tests/**`
-- **Forbidden Operations**: `rm -rf`, direct infra changes, production deployment
-- **Deployment**: Staging only via script
-- **Secrets**: No hardcoded secrets; use env vars
-
-## Acceptance Criteria (MUST)
-- [ ] User can <action>
-  - Verification: `npm test tests/feature_x.test.ts`
-  - Expected Output: `✓ all tests passed`
-
-## Milestones (SHOULD)
-### Milestone 1: <Name>
-- Deliverables: ...
-- Verify by: ...
+<User-visible goal. 1–3 short paragraphs.>
 
 ## Progress (MUST)
-- [ ] 2025-11-22T14:00:00Z - Task started (Author: Agent-007)
+Status: IN_PROGRESS | BLOCKED | DONE
+Next Action: <single smallest safe step>
+
+- [ ] 2025-11-22T14:00:00Z - <action> (Owner: <id>)
+
+## Context and Orientation (MUST)
+<Current architecture, key files, current behavior, and term definitions.>
+
+## Interfaces & Dependencies (SHOULD)
+<APIs, data contracts, external services, and integration points.>
+
+## Constraints & Safety (MUST)
+### Allowed Scope
+- Allowed directories: `src/**`, `tests/**`
+- Allowed environments: local/dev only
+
+### Approval-Required Operations
+- Dependency upgrades
+- Database migrations
+- Any deploy/release step
+- Any external network call that sends data outside the org
+
+### Forbidden Operations
+- Destructive deletes without explicit approval (e.g., `rm -rf`, dropping prod DBs)
+- Exfiltration of secrets/PII
+
+### Secrets & PII
+- Never paste secrets into this plan or logs; use `<REDACTED>` placeholders.
+
+## Tooling Interface & Governance (MUST)
+<Declare allowed tools, MCP servers (if any), allowed roots, and required approvals.>
+
+## Plan of Work (MUST)
+<Prose description of approach and ordering.>
+
+## Milestones (SHOULD)
+<Decompose into independently verifiable chunks with deliverables and checkpoints.>
+
+## Concrete Steps (SHOULD)
+<Step-by-step commands with cwd and expected outcomes. Prefer small steps.>
+
+## Validation & Acceptance (MUST)
+<Acceptance criteria + how to verify with commands and expected outputs.>
+
+## Idempotence & Recovery (SHOULD)
+<How to retry safely, rollback, and recover from partial failure.>
 
 ## Surprises & Discoveries (MUST)
-- 2025-11-22T14:10:00Z - Found legacy code issue
-  - Evidence: `src/legacy.ts:42`
+- 2025-11-22T14:10:00Z - <discovery> (Evidence: <file/command>)
 
 ## Decision Log (MUST)
-- 2025-11-22T14:20:00Z - Selected Library X
-  - Rationale: Better performance
-  - Author: Agent-007
+- 2025-11-22T14:20:00Z - Decision: <what>
+  Alternatives: <A>, <B>
+  Rationale: <why>
+  Consequences: <what this enables/risks>
+  Evidence: <command/file>
+  Author: <id>
+
+## Inter-Agent Messages (MUST if multi-agent)
+- 2025-11-22T14:30:00Z - From: <agent> To: <agent>
+  Intent: <request/notify/block>
+  Message: <content>
+  Acceptance/Test: <what proves it’s done>
+
+## Handoff Summary (MUST on handoff; SHOULD otherwise)
+<Context Snapshot for the next agent/session.>
 
 ## Outcomes & Retrospective (MUST)
-- Summary of achievements
-- Lessons learned
+<What shipped, what changed, what was learned, and follow-ups.>
 ```
 
 **Key Principles**:
-- **Strict Ordering**: Agents rely on section order for parsing.
-- **Mandatory Safety**: Constraints must be explicit.
-- **ISO 8601 Timestamps**: All logs must use `YYYY-MM-DDTHH:MM:SSZ`.
-- **Author Attribution**: Every log entry must identify the author.
+- **Strict ordering**: agents should not infer structure from “similar-looking” headings.
+- **Resumability**: `Progress` MUST include `Status` and `Next Action`.
+- **Safety first**: constraints, approvals, and forbidden ops are explicit and enforced by stopping.
+- **Evidence over narrative**: claims are supported by minimal evidence.
 
 **Trade-offs**:
-- ✅ **Advantages**: Predictable parsing, guaranteed safety checks, audit trail.
-- ⚠️ **Disadvantages**: Verbose for very small tasks (but ExecPlan is for >30min tasks).
+- ✅ **Advantages**: predictable parsing, safer execution, reliable handoffs, auditable decisions
+- ⚠️ **Disadvantages**: verbose for small tasks; requires discipline to keep living sections current
+- 💡 **Alternatives**: lightweight checklists for trivial tasks
 
-**Sources**: [R1]
+**Sources**: [R1], [R2]
 
-### Pattern: Three-Phase Development Process
+### Pattern: Plan → Implement → Verify (SHOULD)
 
-**Intent**: Separate planning, implementation, and verification into distinct AI agent sessions to maximize focus and reduce context pollution.
+**Intent**: Reduce errors by separating planning, implementation, and verification, while allowing context refresh when it helps. [R1]
 
-**Context**: When using AI agents for complex features requiring multiple hours of work across potentially multiple context windows.
+**Context**: Medium/large tasks with meaningful risk, unknowns, or long tool output histories.
 
 **Implementation**:
 
 ```markdown
-# Phase 1: Plan Only (Session 1)
-User: "I need to implement real-time notifications. Create a detailed ExecPlan
-       but write no code yet."
-Agent: [Creates comprehensive PLAN.md with all sections]
+# Phase 1: Plan
+Create or update the PLAN only. Do not change code.
 
-# Phase 2: Implementation (Session 2 - Fresh Context)
-User: "Execute the plan in ./plans/notifications-PLAN.md"
-Agent: [Reads plan, implements systematically, updates Progress section]
+# Phase 2: Implement
+Follow `Next Action` iteratively, updating living sections as you go.
 
-# Phase 3: Verify & Refactor (Session 3 - Fresh Context)
-User: "Verify the implementation matches the ExecPlan acceptance criteria"
-Agent: [Runs tests, confirms behaviors, updates Outcomes section]
+# Phase 3: Verify
+Run the Validation & Acceptance commands. Fix gaps. Update Outcomes.
 ```
 
-**Key Principles**:
-- **Clean Context**: Each phase starts with reset context to avoid confusion
-- **Plan Immutability**: During execution sessions, the plan body (Milestones, Requirements) is **immutable**. Only Progress/Surprises/Decisions update. If the plan *must* change, use the Plan Revision Workflow.
-- **Verification Independence**: Different perspective catches issues
+**Context Refresh Triggers** (SHOULD) [R5]:
+- Context is polluted by long logs/tool output
+- Switching subsystems or re-scoping the plan
+- Handoff to a different agent/runtime
 
-**Trade-offs**:
-- ✅ **Advantages**: Clear separation of concerns, reduced errors, better documentation
-- ⚠️ **Disadvantages**: More total time, potential context switching overhead
-- 💡 **Alternatives**: Single-session for simple tasks under 30 minutes
+**Sources**: [R1], [R5]
 
-**Sources**: [R1]
+### Pattern: Context Snapshot & Resumption (MUST on context refresh/handoff)
 
-### Pattern: Milestone-Based Structuring
+**Intent**: Preserve execution state across sessions and agent handoffs without relying on memory. [R5]
 
-**Intent**: Decompose complex tasks into independently verifiable milestones that incrementally build toward the goal.
-
-**Context**: Large features that would overwhelm a single context window or require natural breaking points for validation.
+**Context**: Any time you start a new session, change agent/runtime, or prune context.
 
 **Implementation**:
 
 ```markdown
-## Milestone 1: Database Schema and Models
-Scope: Create tables and ORM models for notifications
+## Handoff Summary
+Timestamp: 2025-11-22T16:00:00Z
+Status: IN_PROGRESS
+Next Action: Run `npm test` and fix the failing OAuth callback test.
 
-Deliverables:
-- Migration file: migrations/001_create_notifications.sql
-- Model file: models/Notification.ts
-- Test file: tests/models/Notification.test.ts
+What’s done:
+- Implemented OAuth callback route and session creation.
 
-Commands to verify:
-bash
-npm run migrate:up
-npm test models/Notification.test.ts
+Key decisions:
+- Used library X for OAuth client (see Decision Log 2025-11-22T14:20:00Z).
 
-Expected output:
-✓ Migration 001_create_notifications.sql applied
-✓ Notification model creates records
-✓ Notification model validates required fields
+Blockers/risks:
+- Flaky integration test on CI; needs isolation.
 
-## Milestone 2: WebSocket Infrastructure
-Scope: Set up Socket.io for real-time connections
-
-[Continue with same structure...]
+Evidence pointers:
+- `src/auth/oauth.ts` updated
+- Command: `npm test tests/auth/oauth.test.ts` (last run: 2025-11-22T15:40:00Z, failing)
 ```
 
 **Key Principles**:
-- **Independent Verification**: Each milestone produces observable results
-- **Incremental Progress**: Later milestones build on earlier ones
-- **Clear Boundaries**: No ambiguity about what belongs in each milestone
+- Keep it short and high-signal; link to evidence rather than pasting logs.
+- Always include `Status` and `Next Action`.
+- Treat context as finite: store full logs in files/artifacts and only summarize the relevant excerpt in the plan.
 
-**Trade-offs**:
-- ✅ **Advantages**: Natural checkpoints, easier debugging, partial delivery possible
-- ⚠️ **Disadvantages**: Some overhead in milestone design, potential for over-engineering
-- 💡 **Alternatives**: Continuous flow for smaller tasks
+**Sources**: [R5]
 
-**Sources**: [R1]
+### Pattern: Prototyping Milestones / Spikes (SHOULD)
 
-### Pattern: Multi-Agent Coordination
+**Intent**: De-risk unknowns quickly with timeboxed prototypes, while keeping the plan authoritative. [R1]
 
-**Intent**: Enable multiple AI agents to collaborate on a single plan while maintaining coherence and avoiding conflicting edits.
-
-**Context**: Complex projects requiring specialized agents (frontend, backend, database, testing) working in parallel or sequence.
+**Context**: Unknown libraries, unclear performance characteristics, uncertain APIs, or ambiguous requirements.
 
 **Implementation**:
 
 ```markdown
-## Agent Coordination Protocol
+## Plan of Work
+1) Timebox a 60-minute spike to validate library/API feasibility.
+2) Record findings (with evidence) under Surprises & Discoveries.
+3) Decide (Decision Log) and update the plan before proceeding.
+```
 
-### Agent Roles and Responsibilities
-- **Lead Agent**: Maintains PLAN.md, coordinates milestones
-- **Frontend Agent**: UI components, styling, user interactions
-- **Backend Agent**: API endpoints, business logic, data processing
-- **Database Agent**: Schema design, migrations, query optimization
-- **Test Agent**: Test suite development, coverage analysis
+**Sources**: [R1]
 
-### Coordination Mechanisms
+### Pattern: Milestone-Based Structuring (SHOULD)
 
-#### 1. Lock-Based Editing
-yaml
+**Intent**: Decompose large work into independently verifiable chunks to reduce risk and support partial progress. [R1]
+
+**Context**: Any task where a single linear checklist would be too long or cross too many subsystems.
+
+**Implementation**:
+
+```markdown
+## Milestones
+### Milestone 1: Data Model + Migration
+- Deliverables:
+  - `migrations/001_create_notifications.sql`
+  - `src/models/Notification.ts`
+- Verify:
+  - Run `npm test tests/models/notification.test.ts`
+  - Expected: tests pass and migration applies cleanly
+
+### Milestone 2: API Endpoint
+- Deliverables:
+  - `src/api/notifications.ts`
+- Verify:
+  - Run `curl -s http://localhost:3000/api/notifications | head`
+  - Expected: JSON array response (non-empty in seeded env)
+```
+
+**Key Principles**:
+- Each milestone has deliverables and a verification method.
+- Avoid unverifiable “done” states; define what success looks like.
+
+**Sources**: [R1]
+
+### Pattern: Multi-Agent Coordination (2025 Standard)
+
+**Intent**: Coordinate multiple agents without conflicting edits or implicit dependencies. [R3]
+
+**Context**: When more than one agent contributes to the same PLAN or codebase concurrently.
+
+**Implementation**:
+
+**Preferred layering**:
+1. **A2A** for agent-to-agent messaging (if available). Record summaries in `Inter-Agent Messages`. [R3]
+2. **MCP** for tool/data access with explicit allowlists and roots. [R2]
+3. **Fallback**: file locks + message passing in the plan.
+
+**Fallback lock file schema**:
+
+```yaml
 # .agent-locks.yaml
+version: 1
+generated_at: 2025-11-19T10:30:00Z
+ttl_seconds: 3600
 locks:
-  - agent: frontend-agent-01
-    files:
-      - src/components/**
-      - styles/**
-    acquired: 2025-11-19T10:30:00Z
-    expires: 2025-11-19T11:30:00Z
-  - agent: backend-agent-02
-    files:
-      - api/**
-      - models/**
-    acquired: 2025-11-19T10:35:00Z
-    expires: 2025-11-19T11:35:00Z
-
-#### 2. Message Passing
-markdown
-## Inter-Agent Messages
-
-### [2025-11-19 10:45] Frontend → Backend
-Need new endpoint: GET /api/notifications/unread-count
-Expected response: { count: number, lastChecked: string }
-
-### [2025-11-19 10:50] Backend → Frontend
-Endpoint ready at: GET /api/notifications/unread-count
-Added WebSocket event: 'notification:count-updated'
-
-#### 3. Conflict Resolution
-markdown
-## Conflict Log
-
-### [2025-11-19 11:00] Merge Conflict in models/User.ts
-- Frontend Agent: Added displayName field
-- Backend Agent: Added lastLoginAt field
-- Resolution: Both changes accepted, no overlap
-- Resolved by: Lead Agent
-
-### Synchronization Points
-
-markdown
-## Synchronization Schedule
-
-### Daily Sync (every 24h)
-- All agents commit work-in-progress
-- Lead agent reviews Progress section
-- Conflicts identified and resolved
-- Next day's work assigned
-
-### Milestone Sync (per milestone)
-- All agents complete assigned tasks
-- Integration testing performed
-- Lead agent updates Outcomes section
-- Next milestone activated
+  - owner: frontend-agent-01
+    scope:
+      paths:
+        - "src/components/**"
+        - "styles/**"
+    acquired_at: 2025-11-19T10:30:00Z
+    expires_at: 2025-11-19T11:30:00Z
+    notes: "Editing UI components for notifications"
 ```
 
-**Key Principles**:
-- **Clear Ownership**: Each file/directory has single owner at any time
-- **Explicit Communication**: All cross-agent dependencies documented
-- **Regular Synchronization**: Prevent divergence through scheduled syncs
-- **Conflict Prevention**: Lock system prevents simultaneous edits
+**Inter-Agent Messages format** (plan-local, always logged):
 
-**Trade-offs**:
-- ✅ **Advantages**: Parallel work, specialized expertise, faster delivery
-- ⚠️ **Disadvantages**: Coordination overhead, potential for conflicts, complexity
-- 💡 **Alternatives**: Single agent for smaller tasks, sequential processing
+```markdown
+## Inter-Agent Messages
+- 2025-11-19T10:45:00Z - From: frontend-agent-01 To: backend-agent-02
+  Intent: REQUEST
+  Message: Need endpoint `GET /api/notifications/unread-count` returning `{ count: number, lastChecked: string }`.
+  Acceptance/Test: `curl -s http://localhost:3000/api/notifications/unread-count` returns JSON with those keys.
+```
 
-**Sources**: [R1]
+**Conflict resolution rules**:
+- Prefer a single “Lead Agent” as the only editor of the plan body; other agents propose changes via messages.
+- If locks conflict, stop and resolve explicitly; never “race-edit” the same files.
+
+**Sources**: [R3], [R2], [R1]
 
 ### Pattern: Plan Revision Workflow
 
-**Intent**: Systematically handle situations where the original plan proves incorrect or impossible, maintaining traceability of changes.
+**Intent**: Safely change scope/approach when discoveries invalidate the current plan, while preserving traceability. [R1]
 
-**Context**: When Surprises & Discoveries reveal fundamental flaws in assumptions, technical blockers, or better approaches. **Note**: Do not revise the plan for minor adjustments; only for structural changes that invalidate current milestones.
+**Context**: When new evidence makes the current approach incorrect, unsafe, or infeasible.
 
 **Implementation**:
 
 ```markdown
-## Plan Revision Protocol
-
-### Revision Triggers
-1. **Technical Blocker**: Assumed API/library doesn't support required feature
-2. **Performance Issue**: Approach won't scale to requirements
-3. **Security Concern**: Implementation creates vulnerability
-4. **Better Alternative**: Discovery of superior approach mid-implementation
-
-### Revision Process
-
-#### Step 1: Document the Issue
-markdown
 ## Surprises & Discoveries
+- 2025-11-19T14:30:00Z - REVISION NEEDED: Current approach doesn’t meet requirements.
+  Evidence: <command/file>
 
-### [2025-11-19 14:30] REVISION NEEDED: Database Approach Won't Scale
-- **Originally Planned**: Store notifications in PostgreSQL with polling
-- **Issue Discovered**: Polling every second for 10K users = 10K queries/sec
-- **Evidence**: Load test showed 98% CPU at 1K users
-- **Impact**: Complete redesign of notification system required
-
-#### Step 2: Propose Revision
-markdown
 ## Decision Log
+- 2025-11-19T14:45:00Z - Decision: Revise architecture from A to B.
+  Alternatives: Keep A and accept limitation; Use C
+  Rationale: Evidence indicates A cannot satisfy acceptance criteria.
+  Consequences: Adds new dependency; changes milestones.
+  Evidence: <command/file>
+  Author: Lead Agent
 
-### [2025-11-19 14:45] REVISION PROPOSAL: Switch to Event Streaming
-**Current Approach**: PostgreSQL + polling
-**Proposed Approach**: Redis Streams + Server-Sent Events
-**Rationale**:
-- Redis handles 100K msgs/sec with 5% CPU
-- SSE eliminates polling overhead
-- Simpler than WebSocket for one-way flow
-**Risks**:
-- Team less familiar with Redis Streams
-- SSE has browser connection limits
-**Decision**: APPROVED - Proceed with revision
-
-#### Step 3: Update Plan
-markdown
 ## Plan Revision History
-
-### Revision 1: Notification System Architecture
-**Date**: 2025-11-19 15:00
-**Sections Modified**:
-- Milestone 2: Changed from "PostgreSQL Queue" to "Redis Streams"
-- Milestone 3: Changed from "Polling API" to "SSE Endpoint"
-- Added Milestone 4: "Redis Stream Consumer Service"
-
-**Original Milestone 2** (Preserved for reference):
-<details>
-<summary>View original plan</summary>
-
-## Milestone 2: PostgreSQL Queue Implementation
-- Create notifications table with queue columns
-- Implement polling endpoint
-- Add database indexes for performance
-
-</details>
-
-**Revised Milestone 2**:
-## Milestone 2: Redis Streams Setup
-- Configure Redis with persistence
-- Create notification stream schema
-- Implement publisher service
-
-#### Step 4: Adjust Timeline
-markdown
-## Progress
-
-### Timeline Impact Assessment
-- Original completion: 2025-11-22
-- Revision overhead: +2 days (learning + implementation)
-- New completion: 2025-11-24
-- Mitigation: Parallelize Milestone 4 with Milestone 5
-
-### Revision Guidelines
-
-1. **Preserve History**: Never delete original plans, use collapsible sections
-2. **Justify Changes**: Every revision needs evidence and rationale
-3. **Assess Impact**: Document effect on timeline, resources, other milestones
-4. **Learn Forward**: Add discoveries to "Lessons Learned" for future plans
-5. **Communicate**: If multi-agent, broadcast revision to all affected agents
+- 2025-11-19T15:00:00Z - Revision 1: <title>
+  Changes:
+  - Updated milestones 2–3
+  - Updated Validation & Acceptance
+  Evidence: <command/file>
+  Author: Lead Agent
 ```
 
 **Key Principles**:
-- **Traceability**: Full history of what changed and why
-- **Evidence-Based**: Revisions backed by concrete findings
-- **Minimal Disruption**: Change only what's necessary
-- **Learning Integration**: Each revision improves future planning
-
-**Trade-offs**:
-- ✅ **Advantages**: Adaptability, learning capture, audit trail
-- ⚠️ **Disadvantages**: Document grows large, revision overhead
-- 💡 **Alternatives**: Start new plan (loses context), ignore issues (technical debt)
+- Record evidence first, then revise.
+- Preserve the “before” state (as a snapshot) if it matters for auditability.
+- Remove or label any hypothetical numbers; do not present unverified metrics as facts.
 
 **Sources**: [R1]
+
+### Pattern: Evidence Capture (MUST)
+
+**Intent**: Make progress, decisions, and outcomes verifiable and reproducible. [R6]
+
+**Context**: Every time you claim something works, fails, or changed.
+
+**Implementation**:
+
+```markdown
+- 2025-11-22T15:40:00Z - Ran `npm test tests/auth/oauth.test.ts` (cwd: repo root) -> FAIL
+  Evidence: output excerpt: "Expected 302, got 500"
+```
+
+**Sources**: [R6]
+
+---
+
+## Automation & Compliance
+
+### ExecPlan Linting (SHOULD)
+
+To enforce “mandatory updates” and schema consistency, repositories SHOULD provide an `execplan-lint` check in CI that validates:
+- Required sections exist and appear in the correct order
+- Timestamps match RFC 3339/ISO 8601
+- `Progress` includes `Status` and `Next Action`
+- External URLs appear only in `See Also` / `References` (or are accompanied by an in-plan snapshot)
+- No obvious secret patterns are present (best-effort)
+
+### Machine-Check Examples (MAY)
+
+```bash
+# External URLs (heuristic; ignore localhost)
+grep -nE 'https?://|www\\.' plans/*-PLAN.md | grep -vE 'https?://(localhost|127\\.0\\.0\\.1)'
+
+# Timestamps (RFC 3339)
+grep -nE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})' plans/*-PLAN.md
+```
+
+### Ownership & Change Process (SHOULD)
+
+- Per-task plans SHOULD be updated via PR when work is non-trivial or shared.
+- This spec (`docs/EXEC_PLAN.md`) is owned by the documentation maintainers; changes should preserve self-containment and the schema’s machine-readability.
 
 ---
 
 ## Decision Checklist
 
-- [ ] **Self-Containment**: Plan includes all necessary knowledge without external links [R1]
-  - **Verify**: No critical information requires following external URLs
-  - **Impact**: AI agent fails or hallucinates if missing context
-  - **Mitigation**: Embed code examples, define all terms, include full context
+- [ ] **Self-Containment**: No execution-critical info requires external URLs. [R1]
+  - **Verify**: All required knowledge is in the plan; URLs (if any) have snapshotted excerpts.
+  - **Impact**: Agents stall, hallucinate, or execute unsafe guesses.
+  - **Mitigation**: Embed the necessary excerpt with retrieval time + source.
 
-- [ ] **Living Sections Present**: All four mandatory sections exist and are maintained [R1]
-  - **Verify**: Progress, Surprises, Decisions, Outcomes sections have real content
-  - **Impact**: Lost learnings and inability to resume work
-  - **Mitigation**: Update sections immediately when events occur
+- [ ] **Schema & Ordering**: All MUST sections exist and are ordered correctly. [R1]
+  - **Verify**: Section headings match the Standard ExecPlan Schema.
+  - **Impact**: Tooling and agents mis-parse, causing missed constraints or acceptance checks.
+  - **Mitigation**: Start from the template; use linting.
 
-- [ ] **Novice-Enablement**: Someone unfamiliar with codebase can execute successfully [R1]
-  - **Verify**: No assumed knowledge about project structure or conventions
-  - **Impact**: AI agents make incorrect assumptions
-  - **Mitigation**: Document current state, file locations, and conventions explicitly
+- [ ] **Progress Resumability**: `Status` and `Next Action` are present and correct. [R1]
+  - **Verify**: A new agent can resume from `Next Action` without clarification.
+  - **Impact**: Work restarts incorrectly or repeats.
+  - **Mitigation**: Keep `Next Action` to one smallest safe step.
 
-- [ ] **Observable Outcomes**: Acceptance criteria describe user-visible behaviors [R1]
-  - **Verify**: Each criterion can be demonstrated with commands and outputs
-  - **Impact**: Unclear when task is actually complete
-  - **Mitigation**: Replace internal descriptions with external behaviors
+- [ ] **Tool Governance**: Allowed tools/roots/servers and approval gates are explicit. [R2]
+  - **Verify**: There is a clear “allowed/approval-required/forbidden” breakdown.
+  - **Impact**: Accidental destructive ops or policy violations.
+  - **Mitigation**: Default-deny; expand allowlist only as needed with rationale.
 
-- [ ] **Recovery Paths**: Plan includes rollback and retry strategies [R1]
-  - **Verify**: Clear instructions for handling failures and retrying
-  - **Impact**: Stuck state when errors occur
-  - **Mitigation**: Add "If this fails..." sections with recovery steps
+- [ ] **Secrets Hygiene**: No secrets/PII are embedded. [R2]
+  - **Verify**: Logs and snippets are redacted; placeholders used.
+  - **Impact**: Credential leaks, policy violations, incident response.
+  - **Mitigation**: Redact; rotate secrets if exposure occurred.
 
-- [ ] **Strict Schema Compliance**: Plan follows the Standard ExecPlan Schema [R1]
-  - **Verify**: All MUST sections present in correct order. Constraints & Safety defined.
-  - **Impact**: Agent confusion, safety violations.
-  - **Mitigation**: Use the standard template.
+- [ ] **Observable Acceptance**: Acceptance criteria are testable with commands + expected outputs. [R1]
+  - **Verify**: Every acceptance item has a concrete verification step.
+  - **Impact**: “Done” becomes subjective; regressions go unnoticed.
+  - **Mitigation**: Rewrite criteria as externally observable behavior.
 
-- [ ] **Timestamp & Attribution**: All log entries use ISO 8601 and identify author [R1]
-  - **Verify**: `YYYY-MM-DDTHH:MM:SSZ` format used consistently.
-  - **Impact**: Inability to calculate freshness metrics.
-  - **Mitigation**: Enforce format in prompt or linter.
+- [ ] **Recovery Readiness**: Retry/rollback paths exist for risky steps. [R1]
+  - **Verify**: `Idempotence & Recovery` exists (or equivalent) and is actionable.
+  - **Impact**: Partial failure leaves the system stuck or corrupted.
+  - **Mitigation**: Add safe rollback commands and “if this fails” paths.
+
+- [ ] **Evidence Capture**: Key claims are backed by minimal evidence. [R6]
+  - **Verify**: Progress/discoveries/decisions reference commands or file paths.
+  - **Impact**: Future readers cannot trust outcomes.
+  - **Mitigation**: Add evidence entries; avoid raw log dumps.
 
 ---
 
@@ -568,76 +684,46 @@ markdown
 
 ### Anti-pattern: Link-Heavy Plans
 
-**Symptom**: Plan contains multiple "See [URL] for details" or "Follow documentation at [link]"
+**Symptom**: The plan contains “See <URL> for details” where that URL is required to proceed.
 
-**Why It Happens**: Natural tendency to reference rather than embed, especially for well-known technologies
+**Why It Happens**: It is faster to link than to snapshot; agents may also assume web access.
 
 **Impact**:
-- AI agents cannot access external URLs reliably
-- Context lost when links change or become unavailable
-- Different agents may interpret external content differently
+- Execution stalls when the URL is inaccessible
+- Plan becomes non-deterministic as external docs change
+- Different agents interpret external content inconsistently
 
-**Solution**: Embed the essential parts directly in the plan with attribution
-
-**Example**:
-
-```markdown
-# ❌ Anti-pattern
-Configure OAuth2 following Google's guide at:
-https://developers.google.com/identity/protocols/oauth2
-
-# ✅ Correct pattern
-Configure OAuth2 with Google (based on official docs):
-
-1. Create credentials in Google Cloud Console:
-   - Go to APIs & Services > Credentials
-   - Create OAuth 2.0 Client ID
-   - Set redirect URI to: http://localhost:3000/auth/google/callback
-
-2. Required scopes for basic profile:
-   - openid - Required for OpenID Connect
-   - email - Access to user's email
-   - profile - Access to basic profile info
-
-Code example:
-[Embed actual configuration code here]
-```
+**Solution**: Snapshot the required excerpt into the plan with retrieval timestamp + source.
 
 **Sources**: [R1]
 
-### Anti-pattern: Static Requirements Lists
+### Anti-pattern: Ambiguous Time Formats
 
-**Symptom**: Plan has requirements that never update despite discoveries during implementation
+**Symptom**: Logs use `YYYY-MM-DD HH:MM` or omit timezone.
 
-**Why It Happens**: Treating ExecPlan like traditional specifications instead of living documents
+**Why It Happens**: Human convenience; copy/paste from local clocks.
 
 **Impact**:
-- Decisions made without documentation
-- No learning captured for future work
-- Mismatch between plan and implementation
+- Freshness metrics are wrong
+- Handoffs misinterpret ordering
 
-**Solution**: Continuously update all sections as work progresses
-
-**Example**:
-
-```markdown
-# ❌ Anti-pattern - Never updates
-## Requirements
-- Must support Google OAuth2
-- Must store user sessions
-- Must redirect to dashboard
-
-# ✅ Correct pattern - Living document
-## Requirements (Updated)
-- Must support Google OAuth2
-  - 2025-11-16: Added requirement for refresh token storage
-- Must store user sessions
-  - 2025-11-16: Decided on PostgreSQL over Redis for persistence
-- Must redirect to dashboard
-  - 2025-11-16: Added /onboarding redirect for first-time users
-```
+**Solution**: Use RFC 3339 timestamps with `Z` or explicit offsets.
 
 **Sources**: [R1]
+
+### Anti-pattern: Implicit Tool Permissions
+
+**Symptom**: The plan assumes “the agent can just run X” without stating approvals, roots, or forbidden ops.
+
+**Why It Happens**: Tooling differs across runtimes; permissions are easy to overlook.
+
+**Impact**:
+- Safety violations and policy breaches
+- Unrecoverable destructive changes
+
+**Solution**: Declare tool governance explicitly; default-deny. [R2]
+
+**Sources**: [R2]
 
 ---
 
@@ -645,100 +731,206 @@ Code example:
 
 ### Metrics
 
-**Self-Containment Score**: Percentage of technical decisions that can be understood without external references
-- **Why It Matters**: Directly impacts AI agent success rate
-- **Target**: 100% of critical decisions explained in-plan
-- **Measurement**: Count external links vs embedded knowledge
-- **Tools**: Automated link checker, content analysis
-- **Frequency**: Before each execution phase
+**External Dependency Count**: Number of external URLs outside `See Also` / `References` (target: 0). [R1]
+- **Measurement**: `grep -nE 'https?://|www\\.' <plan-file> | grep -vE 'https?://(localhost|127\\.0\\.0\\.1)'`
 
-**Living Document Freshness**: Time since last update to living sections
-- **Why It Matters**: Stale sections indicate lost learnings
-- **Target**: Updated within 15 minutes of any discovery
-- **Measurement**: Timestamp analysis of section updates
-- **Tools**: Git history, timestamp parsing
-- **Frequency**: Continuous during execution
+**Acceptance Verifiability Ratio**: % of acceptance criteria with command + expected output (target: 100%). [R1]
+- **Measurement**: checklist audit; linter heuristics
 
-**Sources**: [R1]
+**Living Freshness**: Time since last update to living sections during active execution (target: <15 minutes). [R1]
+- **Measurement**: compare latest timestamps in `Progress`/`Surprises`/`Decision Log`
+
+**Evidence Coverage**: % of key claims backed by evidence pointers (target: high). [R6]
+- **Measurement**: spot-check decisions and discoveries for `Evidence:` lines
+
+**Sources**: [R1], [R6]
 
 ### Testing Strategies
 
 **Unit Tests**:
-- Each milestone produces verifiable outputs
-- Commands in plan actually execute successfully
-- File paths and names match actual structure
+- Commands in `Concrete Steps` and `Validation & Acceptance` run successfully
+- Plan file paths and names match the actual repository structure
 
 **Integration Tests**:
-- Complete plan execution achieves stated purpose
-- All acceptance criteria demonstrably met
-- No undefined terms or broken references
+- Executing the plan end-to-end achieves the stated purpose
+- Tool governance constraints are respected (no forbidden ops)
 
-**Performance Benchmarks**:
-- Plan execution time within estimated bounds
-- Token usage for AI agents remains under context limits
-- Update frequency meets freshness targets
+**Resumption Tests**:
+- A new agent can resume from `Handoff Summary` and `Next Action` without re-deriving context
 
 ### Success Criteria
 
-- [ ] AI agent can execute plan without asking clarifying questions
-- [ ] All four living sections contain meaningful, timestamped content
-- [ ] Another developer can understand what was built and why
-- [ ] No critical information requires following external links
-- [ ] Plan accurately reflects final implementation state
+- [ ] Plan is self-contained and novice-executable
+- [ ] Acceptance is demonstrably met via verifiable commands
+- [ ] Living sections reflect real execution state and learnings
+- [ ] Decisions and discoveries are traceable to evidence
 
 ---
 
-## Practical Examples
+## Copy-Pastable Templates
 
-### Example: Single-Agent ExecPlan
+These templates are intended to be pasted into a PLAN file (remove the outer code fence when you paste).
 
-This document's OAuth2 authentication example in the Canonical Definitions section shows a minimal but complete ExecPlan that a single agent can execute end-to-end (purpose, progress, surprises, decisions). Use this pattern for features that fit within one agent's skill set and one codebase.
+### Minimal Template (smallest compliant)
 
-### Example: Multi-Agent ExecPlan
+```markdown
+---
+id: <stable-id>
+status: IN_PROGRESS
+owner: <id>
+created: 2025-11-22T14:00:00Z
+updated: 2025-11-22T14:00:00Z
+profile: codex-strict
+---
 
-The Multi-Agent Coordination pattern demonstrates how to structure PLAN.md when multiple specialized agents (frontend, backend, database, testing) collaborate. Treat the Lead Agent as the sole maintainer of PLAN.md while specialists update only their dedicated sections (Progress, Surprises, Decision Log) via clearly labeled messages.
+# PLAN: <Task Name>
 
-### Example: Plan Revision in Practice
+## Purpose / Big Picture
+<...>
 
-The Plan Revision Workflow pattern illustrates how to document a major architectural pivot (PostgreSQL polling → Redis Streams + SSE). When applying this pattern, always:
-- Capture the surprise with evidence
-- Record the revision decision and risks
-- Preserve the original milestone in a collapsible block
-- Add revised milestones with explicit scope and verification commands
+## Progress
+Status: IN_PROGRESS
+Next Action: <...>
 
-These examples are intended as copy-pastable starting points that novice users and AI agents can adapt with minimal changes.
+- [ ] 2025-11-22T14:00:00Z - <...> (Owner: <id>)
+
+## Constraints & Safety
+<allowed/approval-required/forbidden + secrets rules>
+
+## Tooling Interface & Governance
+<allowed tools/roots/servers + approvals>
+
+## Validation & Acceptance
+<how to verify + expected outputs>
+
+## Surprises & Discoveries
+- 2025-11-22T14:00:00Z - <...> (Evidence: <...>)
+
+## Decision Log
+- 2025-11-22T14:00:00Z - Decision: <...> (Rationale: <...>; Evidence: <...>; Author: <id>)
+
+## Outcomes & Retrospective
+<...>
+```
+
+### Standard Template (recommended)
+
+```markdown
+---
+id: <stable-id>
+status: DRAFT
+owner: <id>
+created: 2025-11-22T14:00:00Z
+updated: 2025-11-22T14:00:00Z
+profile: codex-strict
+---
+
+# PLAN: <Task Name>
+
+## Purpose / Big Picture
+<...>
+
+## Progress
+Status: DRAFT
+Next Action: <...>
+
+## Context and Orientation
+<current behavior, key files, definitions>
+
+## Interfaces & Dependencies
+<APIs/contracts/services>
+
+## Constraints & Safety
+<allowed/approval-required/forbidden + secrets>
+
+## Tooling Interface & Governance
+<tools/MCP servers/roots + approvals>
+
+## Plan of Work
+<prose approach>
+
+## Milestones
+<independently verifiable chunks>
+
+## Concrete Steps
+1) <step> (cwd: <...>) -> expected: <...>
+
+## Validation & Acceptance
+- Criterion: <...>
+  - Verify: `<command>`
+  - Expected: <output excerpt>
+
+## Idempotence & Recovery
+<rollback/retry plan>
+
+## Surprises & Discoveries
+- 2025-11-22T14:00:00Z - <...> (Evidence: <...>)
+
+## Decision Log
+- 2025-11-22T14:00:00Z - Decision: <...>
+  Alternatives: <...>
+  Rationale: <...>
+  Consequences: <...>
+  Evidence: <...>
+  Author: <id>
+
+## Handoff Summary
+<Context Snapshot for resumption>
+
+## Outcomes & Retrospective
+<...>
+```
+
+### Multi-Agent Add-on (use when >1 agent)
+
+```markdown
+## Inter-Agent Messages
+- 2025-11-22T14:00:00Z - From: <agent> To: <agent>
+  Intent: <REQUEST|NOTIFY|BLOCK>
+  Message: <...>
+  Acceptance/Test: <...>
+```
 
 ---
 
 ## Update Log
 
-- **2025-11-22** – Refined specification based on peer review. Added "Standard ExecPlan Schema" with mandatory Safety Constraints. Enforced ISO 8601 timestamps and author attribution. Clarified Plan Immutability and Revision protocols. (Author: AI-First)
-- **2025-11-19** – Added Multi-Agent Coordination pattern with lock-based editing, message passing, and synchronization mechanisms. Added Plan Revision Workflow pattern with systematic change management and traceability guidelines. (Author: AI-First)
-- **2025-11-16** – Initial document creation based on OpenAI Cookbook specification (Author: Claude)
+- **2025-12-17T00:00:00Z** – Major revision: added non-negotiable requirements, compatibility profiles, MCP/A2A integration, context snapshot guidance, explicit tool governance, stricter timestamp rules, updated schema with Validation vs Concrete Steps split, and copy-pastable templates. (Author: doc-maintainer)
+- **2025-11-22T00:00:00Z** – Refined specification based on peer review. Added Standard ExecPlan Schema and clarified revision protocols. (Author: AI-First)
+- **2025-11-19T00:00:00Z** – Added multi-agent coordination and plan revision workflow patterns. (Author: AI-First)
+- **2025-11-16T00:00:00Z** – Initial document creation based on PLANS.md-style guidance. (Author: Claude)
 
 ---
 
 ## See Also
 
 ### Prerequisites
-- [README_AND_AGENTS.md](./README_AND_AGENTS.md) – AI agent README format that complements ExecPlans
-- [Markdown Guide](https://www.markdownguide.org/) – Basic Markdown knowledge required for formatting
+- [`docs/SSOT.md`](./SSOT.md) – Canonical governance for definitions, MUST/SHOULD semantics, and conflict resolution.
+- [`docs/README_AGENTS.md`](./README_AGENTS.md) – How to structure repo instructions (`AGENTS.md`) and AI-first docs.
 
 ### Related Topics
-- [SSOT.md](./SSOT.md) – Single Source of Truth governance and definitions
-- [UNIVERSAL_AGENT_SKILL.md](./UNIVERSAL_AGENT_SKILL.md) – Universal agent skill specification for task execution
-- [CODE_MCP.md](./CODE_MCP.md) – Code execution patterns for AI agents
+- [`docs/CODE_MCP.md`](./CODE_MCP.md) – Practical MCP patterns (sandboxing, allowlists, progressive disclosure) aligned with tool governance.
+- [`docs/AGENT_SKILL.md`](./AGENT_SKILL.md) – Baseline agent competencies assumed by this spec.
 
-### Advanced / Platform-specific
-- [OpenAI Cookbook](https://cookbook.openai.com/) – OpenAI-specific optimizations and patterns
-- Multi-Agent Coordination – See "Pattern: Multi-Agent Coordination" in this document
-- Plan Versioning – See "Pattern: Plan Revision Workflow" in this document
+### Advanced / Platform-specific (not required for execution)
+- OpenAI Cookbook PLANS.md guidance – Source inspiration for long-running planning patterns. https://cookbook.openai.com/articles/codex_exec_plans
+- MCP specification – Defines tool/data access protocol expectations and safety controls. https://modelcontextprotocol.io/specification/2025-11-25
+- A2A announcement – Background on interoperable agent-to-agent coordination. https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/
+- GitHub MCP registry/allowlist controls – Example of real-world tool governance evolution. https://github.blog/changelog/2025-11-18-internal-mcp-registry-and-allowlist-controls-for-vs-code-stable-in-public-preview/
+- OpenAI Agents SDK session memory – Practical context engineering patterns for long tasks. https://cookbook.openai.com/examples/agents_sdk/session_memory
+- Claude Code best practices – Additional guidance on instruction files and operational safety. https://www.anthropic.com/engineering/claude-code-best-practices
 
 ---
 
 ## References
 
-- [R1] OpenAI. "Using PLANS.md for multi-hour problem solving." OpenAI Cookbook. https://cookbook.openai.com/articles/codex_exec_plans (accessed 2025-11-16)
+- [R1] OpenAI. “Using PLANS.md for multi-hour problem solving.” OpenAI Cookbook. https://cookbook.openai.com/articles/codex_exec_plans (accessed 2025-12-17)
+- [R2] Model Context Protocol. “Specification.” https://modelcontextprotocol.io/specification/2025-11-25 (accessed 2025-12-17)
+- [R3] Google Developers Blog. “Announcing the Agent2Agent Protocol (A2A).” https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/ (accessed 2025-12-17)
+- [R4] GitHub Changelog. “MCP registry and allowlist controls for VS Code Stable in public preview.” https://github.blog/changelog/2025-11-18-internal-mcp-registry-and-allowlist-controls-for-vs-code-stable-in-public-preview/ (accessed 2025-12-17)
+- [R5] OpenAI Cookbook. “Context Engineering – Short-Term Memory Management with Sessions from OpenAI Agents SDK.” https://cookbook.openai.com/examples/agents_sdk/session_memory (accessed 2025-12-17)
+- [R6] OpenAI. “Introducing Codex.” https://openai.com/index/introducing-codex/ (accessed 2025-12-17)
+- [R7] Anthropic. “Claude Code Best Practices.” https://www.anthropic.com/engineering/claude-code-best-practices (accessed 2025-12-17)
 
 ---
 

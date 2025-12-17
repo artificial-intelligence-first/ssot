@@ -132,12 +132,12 @@ nav:
       - Overview: SSOT.md
       - Agent Catalog: AGENTS.md
   - Specifications:
-      - Universal Agent Skill: UNIVERSAL_AGENT_SKILL.md
-      - ExecPlan: EXEC_PLAN.md
-      - TypeScript Standard: TYPESCRIPT_STANDARD.md
+      - Universal Agent Skill: AGENT_SKILL.md
+      - Exec Plan: EXEC_PLAN.md
+      - TypeScript Standard Set: TYPESCRIPT_SET.md
   - Guides:
       - Code MCP: CODE_MCP.md
-      - README & AGENTS Patterns: README_AND_AGENTS.md
+      - README & AGENTS Patterns: README_AGENTS.md
 
   - Templates:
       - Topic Template: _templates/TOPIC_TEMPLATE.md
